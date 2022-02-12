@@ -23,8 +23,21 @@ class Rectangle(Elem):
         return (self.x <= x <= self.x + self.width and
                 self.y <= y <= self.y + self.height)
 
+    def distance_squared(self, x, y):
+        cx = self.x + self.width / 2
+        cy = self.y + self.height / 2
+        dx = (x - cx)
+        dy = (y - cy)
+        return dx*dx + dy*dy
+
     def set_fill(self, fill):
         self.canvas.canvas.itemconfig(self.elem_id, fill=fill)
+
+    def move_to(self, x, y):
+        self.x = x
+        self.y = y
+        self.canvas.canvas.coords(self.elem_id,
+                                  x, y, x + self.width, y + self.height)
 
 
 class Text(Elem):
@@ -32,13 +45,19 @@ class Text(Elem):
         elem_id = canvas.canvas.create_text((x, y), **kwargs)
         super().__init__(canvas, elem_id, x, y)
 
+    def set_text(self, text):
+        self.canvas.canvas.itemconfig(self.elem_id, text=text)
+
 
 class Canvas:
-    def __init__(self, workspace):
+    def __init__(self, workspace, width, height, column, row, sticky):
         self.workspace = workspace
         self.canvas = tkinter.Canvas(workspace.root, bd=0,
-                                     highlightthickness=0)
-        self.canvas.pack(fill='both', expand=True)
+                                     highlightthickness=0,
+                                     width=width, height=height)
+        #self.canvas.pack(fill='both', expand=True)
+        self.canvas.grid(column=column, row=row, sticky=sticky)
+        #self.canvas.grid(sticky='ew')
         self.elems = []
 
     def add_rectangle(self, x, y, width, height, **kwargs):
