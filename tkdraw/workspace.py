@@ -17,32 +17,53 @@ GRID_SPACING = 10
 class ToolCanvas(Canvas):
     def __init__(self, workspace, canvas, width, height):
         super().__init__(workspace, canvas, width, height)
-        self.border_line = self.add_line(TOOLS_WIDTH - 1, 0,
-                                         0, TOOLS_HEIGHT - 1)
+        self.border_line = self.add_line(TOOLS_WIDTH - 1, 1,
+                                         0, TOOLS_HEIGHT - 2)
         self.register_handler('<Configure>', self.handle_config_change)
 
     def handle_config_change(self, e):
-        self.border_line.move_line(TOOLS_WIDTH - 1, 0, 0, e.height - 1)
+        self.border_line.move_line(TOOLS_WIDTH - 1, 1, 0, e.height - 2)
 
 
 class DrawCanvas(Canvas):
     def __init__(self, workspace, canvas, width, height):
         super().__init__(workspace, canvas, width, height)
-        self.grid_points = {}
-        self.border_rect = self.add_rectangle(0, 0, DRAW_WIDTH - 1, 
-                                              DRAW_HEIGHT - 1, outline='',
-                                              fill='white')
-        self.register_handler('<Configure>', self.handle_config_change)
+        self.h_rects     = []
+        self.v_rects     = []
+        self.border_rect = self.add_rectangle(0, 0, 0, 0, outline='',
+                                              fill='black')
+        self.register_handler('<Configure>', self._handle_config_change)
 
-    def handle_config_change(self, e):
-        self.border_rect.resize(0, 0, e.width - 1, e.height - 1)
+    def _handle_config_change(self, e):
+        '''
+        Called when the canvas size changes.  Mainly this deals with drawing
+        the grid on the canvas.  The naive algorithm is O(MN) and draws a
+        single pixel at each grid point.  As the window gets large, the
+        performance tanks incredibly badly with that algorithm.
 
-        for x in range(1, e.width // GRID_SPACING + 1):
-            for y in range(1, e.height // GRID_SPACING + 1):
-                p = (x, y)
-                if p not in self.grid_points:
-                    l = self.add_line(x * GRID_SPACING, y * GRID_SPACING, 1, 0)
-                    self.grid_points[p] = l
+        Instead, we start with a black rectangle covering the entire canvas
+        and then draw white horizontal bands spaced to carve out horizontal
+        lines from the black rectangle and then we draw white vertical bands
+        spaced to cut the black lines up into individual pixels at each grid
+        point.  This is O(M + N) and performance is snappy, at least on my
+        M1 MacBook Pro.
+        '''
+        self.border_rect.resize(GRID_SPACING, GRID_SPACING, e.width - 1,
+                                e.height - 1)
+
+        for y, r in enumerate(self.h_rects):
+            r.resize(0, y * GRID_SPACING + 1, e.width, GRID_SPACING - 1)
+        for y in range(len(self.h_rects), e.height // GRID_SPACING + 1):
+            r = self.add_rectangle(0, y * GRID_SPACING + 1, e.width,
+                                   GRID_SPACING - 1, fill='white', outline='')
+            self.h_rects.append(r)
+
+        for x, r in enumerate(self.v_rects):
+            r.resize(x * GRID_SPACING + 1, 0, GRID_SPACING - 1, e.height)
+        for x in range(len(self.v_rects), e.width // GRID_SPACING + 1):
+            r = self.add_rectangle(x * GRID_SPACING + 1, 0, GRID_SPACING - 1,
+                                   e.height, fill='white', outline='')
+            self.v_rects.append(r)
 
 
 class Workspace(TKBase):

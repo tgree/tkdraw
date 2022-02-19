@@ -58,7 +58,7 @@ class CanvasElem(Elem):
         self.y      = y
         self.width  = width
         self.height = height
-        self.coords(x, y, width, height)
+        self.coords(x, y, x + width, y + height)
 
     def coords(self, *args):
         self._canvas._coords(self, *args)
