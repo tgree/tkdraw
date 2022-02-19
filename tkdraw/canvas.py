@@ -1,6 +1,10 @@
 import tkinter
 
 
+def point_in_box(px, py, x0, y0, width, height):
+    return (x0 <= px <= x0 + width and y0 <= py <= y0 + height)
+
+
 class Elem:
     def __init__(self, canvas, elem_id, x, y, width=None, height=None):
         self.canvas  = canvas
@@ -12,16 +16,19 @@ class Elem:
         if height is not None:
             self.height = height
 
+    def bbox(self):
+        return self.canvas.canvas.bbox(self.elem_id)
 
-class Rectangle(Elem):
-    def __init__(self, canvas, x, y, width, height, **kwargs):
-        elem_id = canvas.canvas.create_rectangle(
-                (x, y, x + width, y + height), **kwargs)
-        super().__init__(canvas, elem_id, x, y, width=width, height=height)
+    def tag_lower(self, other_elem):
+        self.canvas.canvas.tag_lower(self.elem_id, other_elem.elem_id)
 
+    def set_fill(self, fill):
+        self.canvas.canvas.itemconfig(self.elem_id, fill=fill)
+
+
+class BoundedElem(Elem):
     def contains(self, x, y):
-        return (self.x <= x <= self.x + self.width and
-                self.y <= y <= self.y + self.height)
+        return point_in_box(x, y, self.x, self.y, self.width, self.height)
 
     def distance_squared(self, x, y):
         cx = self.x + self.width / 2
@@ -30,14 +37,32 @@ class Rectangle(Elem):
         dy = (y - cy)
         return dx*dx + dy*dy
 
-    def set_fill(self, fill):
-        self.canvas.canvas.itemconfig(self.elem_id, fill=fill)
-
     def move_to(self, x, y):
         self.x = x
         self.y = y
         self.canvas.canvas.coords(self.elem_id,
                                   x, y, x + self.width, y + self.height)
+
+    def resize(self, x, y, width, height):
+        self.x      = x
+        self.y      = y
+        self.width  = width
+        self.height = height
+        self.canvas.canvas.coords(self.elem_id, x, y, x + width, y + height)
+
+
+class Rectangle(BoundedElem):
+    def __init__(self, canvas, x, y, width, height, **kwargs):
+        elem_id = canvas.canvas.create_rectangle(
+                (x, y, x + width, y + height), **kwargs)
+        super().__init__(canvas, elem_id, x, y, width=width, height=height)
+
+
+class Oval(BoundedElem):
+    def __init__(self, canvas, x, y, width, height, **kwargs):
+        elem_id = canvas.canvas.create_oval(
+                (x, y, x + width, y + height), **kwargs)
+        super().__init__(canvas, elem_id, x, y, width=width, height=height)
 
 
 class Text(Elem):
@@ -47,6 +72,9 @@ class Text(Elem):
 
     def set_text(self, text):
         self.canvas.canvas.itemconfig(self.elem_id, text=text)
+
+    def set_fill(self, fill):
+        self.canvas.canvas.itemconfig(self.elem_id, fill=fill)
 
 
 class Canvas:
@@ -64,6 +92,11 @@ class Canvas:
         r = Rectangle(self, x, y, width, height, **kwargs)
         self.elems.append(r)
         return r
+
+    def add_oval(self, x, y, width, height, **kwargs):
+        o = Oval(self, x, y, width, height, **kwargs)
+        self.elems.append(o)
+        return o
 
     def add_text(self, x, y, **kwargs):
         t = Text(self, x, y, **kwargs)
