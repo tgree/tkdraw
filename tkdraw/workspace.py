@@ -58,3 +58,43 @@ class Workspace(TKBase):
         self._root.columnconfigure(1, weight=1)
         self._root.rowconfigure(0, weight=1)
         self._root.minsize(300, TOOLS_HEIGHT)
+
+        self.drag_start = None
+        self.drag_end   = None
+        self.drag_line  = None
+
+        self.register_mouse_down(self.handle_mouse_down)
+        self.register_mouse_up(self.handle_mouse_up)
+        self.register_mouse_moved(self.handle_mouse_moved)
+
+    def handle_mouse_down(self, _, e, x, y):
+        if e.widget != self.canvas._canvas:
+            return
+
+        assert self.drag_line is None
+        x               = x // GRID_SPACING
+        y               = y // GRID_SPACING
+        self.drag_start = (x, y)
+        self.drag_end   = (x, y)
+        self.drag_line  = self.canvas.add_line(x * GRID_SPACING,
+                                               y * GRID_SPACING,
+                                               0, 0)
+
+    def handle_mouse_up(self, _, e, x, y):
+        self.drag_start = None
+        self.drag_end   = None
+        self.drag_line  = None
+
+    def handle_mouse_moved(self, _, e, x, y):
+        if self.drag_line is None:
+            return
+        if e.widget != self.canvas._canvas:
+            return
+
+        x              = x // GRID_SPACING
+        y              = y // GRID_SPACING
+        self.drag_end  = (x, y)
+        self.drag_line.move_line(self.drag_start[0] * GRID_SPACING,
+                                 self.drag_start[1] * GRID_SPACING,
+                                 (x - self.drag_start[0]) * GRID_SPACING,
+                                 (y - self.drag_start[1]) * GRID_SPACING)
