@@ -102,6 +102,7 @@ class Workspace(TKBase):
         self.register_mouse_down(self.handle_mouse_down)
         self.register_mouse_up(self.handle_mouse_up)
         self.register_mouse_moved(self.handle_mouse_moved)
+        self.register_handler('<Configure>', self.handle_config_change)
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
@@ -133,6 +134,18 @@ class Workspace(TKBase):
 
     def handle_canvas_exited(self, _e):
         self.selected_tool.handle_canvas_exited()
+
+    def handle_config_change(self, e):
+        if e.widget != self._root:
+            return
+        if e.height == 1:
+            return
+
+        h = (e.height - (e.height % GRID_SPACING))
+        w = (e.width - (e.width % GRID_SPACING))
+        if e.height != h or e.width != w:
+            x, y, _, _ = self.get_geometry()
+            self.set_geometry(x, y, w, h)
 
     def add_line(self, x, y, dx, dy):
         return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,
