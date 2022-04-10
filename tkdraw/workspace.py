@@ -28,10 +28,12 @@ class ToolCanvas(Canvas):
 class DrawCanvas(Canvas):
     def __init__(self, workspace, canvas, width, height):
         super().__init__(workspace, canvas, width, height)
-        self.h_rects     = []
-        self.v_rects     = []
-        self.border_rect = self.add_rectangle(0, 0, 0, 0, outline='',
-                                              fill='black')
+        self.h_rects       = []
+        self.v_rects       = []
+        self.width_points  = None
+        self.height_points = None
+        self.border_rect   = self.add_rectangle(0, 0, 0, 0, outline='',
+                                                fill='black')
         self.register_handler('<Configure>', self._handle_config_change)
 
     def _handle_config_change(self, e):
@@ -50,6 +52,8 @@ class DrawCanvas(Canvas):
         '''
         self.border_rect.resize(GRID_SPACING, GRID_SPACING, e.width - 1,
                                 e.height - 1)
+        self.width_points  = e.width // GRID_SPACING
+        self.height_points = e.height // GRID_SPACING
 
         for y, r in enumerate(self.h_rects):
             r.resize(0, y * GRID_SPACING + 1, e.width, GRID_SPACING - 1)
