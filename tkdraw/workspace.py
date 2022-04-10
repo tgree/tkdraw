@@ -1,4 +1,5 @@
 from .tk_elems import TKBase, Canvas
+from . import tools
 
 
 WINDOW_X      = 50
@@ -12,6 +13,10 @@ TOOLS_HEIGHT = 400
 DRAW_WIDTH   = WINDOW_WIDTH - TOOLS_WIDTH
 DRAW_HEIGHT  = WINDOW_HEIGHT
 GRID_SPACING = 10
+
+
+def clamp(l, v, r):
+    return l if v < l else r if v > r else v
 
 
 class ToolCanvas(Canvas):
@@ -84,44 +89,46 @@ class Workspace(TKBase):
         self._root.rowconfigure(0, weight=1)
         self._root.minsize(300, TOOLS_HEIGHT)
 
-        self.drag_start = None
-        self.drag_end   = None
-        self.drag_line  = None
-
         self.register_mouse_down(self.handle_mouse_down)
         self.register_mouse_up(self.handle_mouse_up)
         self.register_mouse_moved(self.handle_mouse_moved)
+        self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
+        self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
-        self._root.configure(cursor='tcross')
+        self.tools = [tools.LineTool(self)]
+        self.selected_tool = self.tools[0]
+        self.selected_tool.handle_tool_selected()
+
+    def _handle_mouse_event(self, e, x, y, handler):
+        if e.widget != self.canvas._canvas:
+            return
+
+        x = clamp(0, round(x / GRID_SPACING), self.canvas.width_points)
+        y = clamp(0, round(y / GRID_SPACING), self.canvas.height_points)
+        handler(x, y)
 
     def handle_mouse_down(self, _, e, x, y):
-        if e.widget != self.canvas._canvas:
-            return
-
-        assert self.drag_line is None
-        x               = round(x / GRID_SPACING)
-        y               = round(y / GRID_SPACING)
-        self.drag_start = (x, y)
-        self.drag_end   = (x, y)
-        self.drag_line  = self.canvas.add_line(x * GRID_SPACING,
-                                               y * GRID_SPACING,
-                                               0, 0)
+        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_down)
 
     def handle_mouse_up(self, _, e, x, y):
-        self.drag_start = None
-        self.drag_end   = None
-        self.drag_line  = None
+        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_up)
 
     def handle_mouse_moved(self, _, e, x, y):
-        if self.drag_line is None:
-            return
-        if e.widget != self.canvas._canvas:
-            return
+        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_moved)
 
-        x              = round(x / GRID_SPACING)
-        y              = round(y / GRID_SPACING)
-        self.drag_end  = (x, y)
-        self.drag_line.move_line(self.drag_start[0] * GRID_SPACING,
-                                 self.drag_start[1] * GRID_SPACING,
-                                 (x - self.drag_start[0]) * GRID_SPACING,
-                                 (y - self.drag_start[1]) * GRID_SPACING)
+    def handle_canvas_entered(self, e):
+        self.selected_tool.handle_canvas_entered()
+
+    def handle_canvas_exited(self, e):
+        self.selected_tool.handle_canvas_exited()
+
+    def add_line(self, x, y, dx, dy):
+        return self.canvas.add_line(x * GRID_SPACING, y * GRID_SPACING,
+                                    dx * GRID_SPACING, dy * GRID_SPACING)
+
+    def delete_line(self, l):
+        self.canvas.delete_elem(l)
+
+    def move_line(self, l, x, y, dx, dy):
+        l.move_line(x * GRID_SPACING, y * GRID_SPACING,
+                    dx * GRID_SPACING, dy * GRID_SPACING)
