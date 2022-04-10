@@ -140,8 +140,11 @@ class Canvas:
     def add_window(self, x, y, widget, **kwargs):
         self._canvas.create_window(x, y, window=widget._widget, **kwargs)
 
-    def delete(self, tag):
-        self._canvas.delete(tag)
+    def delete(self, tag_or_id):
+        self._canvas.delete(tag_or_id)
+
+    def delete_elem(self, elem):
+        self.delete(elem._elem_id)
 
     def add_entry(self, **kwargs):
         return Entry(tkinter.Entry(self._canvas, **kwargs))
