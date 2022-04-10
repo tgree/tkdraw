@@ -168,6 +168,12 @@ class TKBase:
     def set_geometry(self, x, y, width, height):
         self._root.geometry('%ux%u+%u+%u' % (width, height, x, y))
 
+    def get_geometry(self):
+        g = self._root.geometry()
+        w, g    = g.split('x')
+        h, x, y = g.split('+')
+        return int(x), int(y), int(w), int(h)
+
     def mainloop(self):
         self._root.mainloop()
 
