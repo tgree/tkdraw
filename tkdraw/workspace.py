@@ -116,10 +116,10 @@ class Workspace(TKBase):
     def handle_mouse_moved(self, _, e, x, y):
         self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_moved)
 
-    def handle_canvas_entered(self, e):
+    def handle_canvas_entered(self, _e):
         self.selected_tool.handle_canvas_entered()
 
-    def handle_canvas_exited(self, e):
+    def handle_canvas_exited(self, _e):
         self.selected_tool.handle_canvas_exited()
 
     def add_line(self, x, y, dx, dy):
@@ -129,6 +129,7 @@ class Workspace(TKBase):
     def delete_line(self, l):
         self.canvas.delete_elem(l)
 
-    def move_line(self, l, x, y, dx, dy):
+    @staticmethod
+    def move_line(l, x, y, dx, dy):
         l.move_line(x * GRID_SPACING, y * GRID_SPACING,
                     dx * GRID_SPACING, dy * GRID_SPACING)
