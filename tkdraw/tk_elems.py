@@ -140,8 +140,11 @@ class Canvas:
     def add_window(self, x, y, widget, **kwargs):
         self._canvas.create_window(x, y, window=widget._widget, **kwargs)
 
-    def delete(self, tag):
-        self._canvas.delete(tag)
+    def delete(self, tag_or_id):
+        self._canvas.delete(tag_or_id)
+
+    def delete_elem(self, elem):
+        self.delete(elem._elem_id)
 
     def add_entry(self, **kwargs):
         return Entry(tkinter.Entry(self._canvas, **kwargs))
@@ -164,6 +167,12 @@ class TKBase:
 
     def set_geometry(self, x, y, width, height):
         self._root.geometry('%ux%u+%u+%u' % (width, height, x, y))
+
+    def get_geometry(self):
+        g = self._root.geometry()
+        w, g    = g.split('x')
+        h, x, y = g.split('+')
+        return int(x), int(y), int(w), int(h)
 
     def mainloop(self):
         self._root.mainloop()

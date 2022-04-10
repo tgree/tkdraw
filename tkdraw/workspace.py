@@ -1,4 +1,5 @@
 from .tk_elems import TKBase, Canvas
+from . import tools
 
 
 WINDOW_X      = 50
@@ -12,6 +13,11 @@ TOOLS_HEIGHT = 400
 DRAW_WIDTH   = WINDOW_WIDTH - TOOLS_WIDTH
 DRAW_HEIGHT  = WINDOW_HEIGHT
 GRID_SPACING = 10
+GRID_PAD     = (GRID_SPACING // 2)
+
+
+def clamp(l, v, r):
+    return l if v < l else r if v > r else v
 
 
 class ToolCanvas(Canvas):
@@ -28,10 +34,16 @@ class ToolCanvas(Canvas):
 class DrawCanvas(Canvas):
     def __init__(self, workspace, canvas, width, height):
         super().__init__(workspace, canvas, width, height)
-        self.h_rects     = []
-        self.v_rects     = []
-        self.border_rect = self.add_rectangle(0, 0, 0, 0, outline='',
-                                              fill='black')
+        self.h_rects       = []
+        self.v_rects       = []
+        self.width_points  = None
+        self.height_points = None
+        self.content_rect  = self.add_rectangle(0, 0, 0, 0, outline='',
+                                                fill='black')
+        self.h_pad         = self.add_rectangle(0, 0, 0, 0, fill='white',
+                                                outline='')
+        self.v_pad         = self.add_rectangle(0, 0, 0, 0, fill='white',
+                                                outline='')
         self.register_handler('<Configure>', self._handle_config_change)
 
     def _handle_config_change(self, e):
@@ -48,21 +60,28 @@ class DrawCanvas(Canvas):
         point.  This is O(M + N) and performance is snappy, at least on my
         M1 MacBook Pro.
         '''
-        self.border_rect.resize(GRID_SPACING, GRID_SPACING, e.width - 1,
-                                e.height - 1)
+        self.content_rect.resize(GRID_PAD - 1, GRID_PAD - 1, e.width - 1,
+                                 e.height - 1)
+        self.width_points  = (e.width - GRID_PAD - 1) // GRID_SPACING
+        self.height_points = (e.height - GRID_PAD - 1) // GRID_SPACING
 
+        self.h_pad.resize(0, 0, e.width, GRID_PAD)
         for y, r in enumerate(self.h_rects):
-            r.resize(0, y * GRID_SPACING + 1, e.width, GRID_SPACING - 1)
+            r.resize(0, y * GRID_SPACING + GRID_PAD + 1, e.width,
+                     GRID_SPACING - 1)
         for y in range(len(self.h_rects), e.height // GRID_SPACING + 1):
-            r = self.add_rectangle(0, y * GRID_SPACING + 1, e.width,
+            r = self.add_rectangle(0, y * GRID_SPACING + GRID_PAD + 1, e.width,
                                    GRID_SPACING - 1, fill='white', outline='')
             self.h_rects.append(r)
 
+        self.v_pad.resize(0, 0, GRID_PAD, e.height)
         for x, r in enumerate(self.v_rects):
-            r.resize(x * GRID_SPACING + 1, 0, GRID_SPACING - 1, e.height)
+            r.resize(x * GRID_SPACING + GRID_PAD + 1, 0, GRID_SPACING - 1,
+                     e.height)
         for x in range(len(self.v_rects), e.width // GRID_SPACING + 1):
-            r = self.add_rectangle(x * GRID_SPACING + 1, 0, GRID_SPACING - 1,
-                                   e.height, fill='white', outline='')
+            r = self.add_rectangle(x * GRID_SPACING + GRID_PAD + 1, 0,
+                                   GRID_SPACING - 1, e.height, fill='white',
+                                   outline='')
             self.v_rects.append(r)
 
 
@@ -80,44 +99,63 @@ class Workspace(TKBase):
         self._root.rowconfigure(0, weight=1)
         self._root.minsize(300, TOOLS_HEIGHT)
 
-        self.drag_start = None
-        self.drag_end   = None
-        self.drag_line  = None
-
         self.register_mouse_down(self.handle_mouse_down)
         self.register_mouse_up(self.handle_mouse_up)
         self.register_mouse_moved(self.handle_mouse_moved)
+        self.register_handler('<Configure>', self.handle_config_change)
+        self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
+        self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
-        self._root.configure(cursor='tcross')
+        self.tools = [tools.LineTool(self)]
+        self.selected_tool = self.tools[0]
+        self.selected_tool.handle_tool_selected()
+
+    def _handle_mouse_event(self, e, x, y, handler):
+        if e.widget != self.canvas._canvas:
+            return
+
+        x = clamp(0, round((x - GRID_PAD) / GRID_SPACING),
+                  self.canvas.width_points)
+        y = clamp(0, round((y - GRID_PAD) / GRID_SPACING),
+                  self.canvas.height_points)
+        handler(x, y)
 
     def handle_mouse_down(self, _, e, x, y):
-        if e.widget != self.canvas._canvas:
-            return
-
-        assert self.drag_line is None
-        x               = round(x / GRID_SPACING)
-        y               = round(y / GRID_SPACING)
-        self.drag_start = (x, y)
-        self.drag_end   = (x, y)
-        self.drag_line  = self.canvas.add_line(x * GRID_SPACING,
-                                               y * GRID_SPACING,
-                                               0, 0)
+        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_down)
 
     def handle_mouse_up(self, _, e, x, y):
-        self.drag_start = None
-        self.drag_end   = None
-        self.drag_line  = None
+        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_up)
 
     def handle_mouse_moved(self, _, e, x, y):
-        if self.drag_line is None:
+        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_moved)
+
+    def handle_canvas_entered(self, _e):
+        self.selected_tool.handle_canvas_entered()
+
+    def handle_canvas_exited(self, _e):
+        self.selected_tool.handle_canvas_exited()
+
+    def handle_config_change(self, e):
+        if e.widget != self._root:
             return
-        if e.widget != self.canvas._canvas:
+        if e.height == 1:
             return
 
-        x              = round(x / GRID_SPACING)
-        y              = round(y / GRID_SPACING)
-        self.drag_end  = (x, y)
-        self.drag_line.move_line(self.drag_start[0] * GRID_SPACING,
-                                 self.drag_start[1] * GRID_SPACING,
-                                 (x - self.drag_start[0]) * GRID_SPACING,
-                                 (y - self.drag_start[1]) * GRID_SPACING)
+        h = (e.height - (e.height % GRID_SPACING))
+        w = (e.width - (e.width % GRID_SPACING))
+        if e.height != h or e.width != w:
+            x, y, _, _ = self.get_geometry()
+            self.set_geometry(x, y, w, h)
+
+    def add_line(self, x, y, dx, dy):
+        return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,
+                                    y * GRID_SPACING + GRID_PAD,
+                                    dx * GRID_SPACING, dy * GRID_SPACING)
+
+    def delete_line(self, l):
+        self.canvas.delete_elem(l)
+
+    @staticmethod
+    def move_line(l, x, y, dx, dy):
+        l.move_line(x * GRID_SPACING + GRID_PAD, y * GRID_SPACING + GRID_PAD,
+                    dx * GRID_SPACING, dy * GRID_SPACING)
