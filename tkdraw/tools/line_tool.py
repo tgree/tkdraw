@@ -33,9 +33,11 @@ class LineTool(Tool):
         self._go_idle()
 
     def handle_tool_selected(self):
+        self.icon_border.configure(outline='black')
         assert self.state == State.IDLE
 
     def handle_tool_deselected(self):
+        self.icon_border.configure(outline='#CCCCCC')
         self._go_idle()
 
     def handle_canvas_entered(self):
