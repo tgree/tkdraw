@@ -139,7 +139,8 @@ class Workspace(TKBase):
         self.tools = []
         self.selected_tool = None
 
-        tool_classes = [tools.LineTool,
+        tool_classes = [tools.NullTool,
+                        tools.LineTool,
                         ]
         for i, tcls in enumerate(tool_classes):
             x = (i % 2) * TOOL_DIM
