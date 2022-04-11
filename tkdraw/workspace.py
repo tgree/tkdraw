@@ -247,3 +247,8 @@ class Workspace(TKBase):
     def move_line(l, x, y, dx, dy):
         l.move_line(x * GRID_SPACING + GRID_PAD, y * GRID_SPACING + GRID_PAD,
                     dx * GRID_SPACING, dy * GRID_SPACING)
+
+    @staticmethod
+    def move_to(elem, x, y, fine_dx=0, fine_dy=0):
+        elem.move_to(x * GRID_SPACING + GRID_PAD + fine_dx,
+                     y * GRID_SPACING + GRID_PAD + fine_dy)
