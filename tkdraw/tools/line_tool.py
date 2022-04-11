@@ -56,6 +56,10 @@ class LineTool(Tool):
 
     def handle_mouse_up(self, p):
         if self.state == State.DRAG_STARTED:
+            if self.line_elem.handles[0] == self.line_elem.handles[1]:
+                self._go_idle()
+                return
+
             self.line_elem = None
             self.state     = State.IDLE
 
