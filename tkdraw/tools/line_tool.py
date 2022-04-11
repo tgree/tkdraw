@@ -60,6 +60,7 @@ class LineTool(Tool):
                 self._go_idle()
                 return
 
+            self.workspace.add_elem(self.line_elem)
             self.line_elem = None
             self.state     = State.IDLE
 
