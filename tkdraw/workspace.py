@@ -18,6 +18,14 @@ def clamp(l, v, r):
     return l if v < l else r if v > r else v
 
 
+class MousePoint:
+    def __init__(self, x, y, ex, ey):
+        self.x  = x
+        self.y  = y
+        self.ex = ex
+        self.ey = ey
+
+
 class ToolCanvas(Canvas):
     def __init__(self, workspace, canvas, width, height):
         super().__init__(workspace, canvas, width, height)
@@ -161,11 +169,13 @@ class Workspace(TKBase):
         if e.widget != self.canvas._canvas:
             return
 
-        x = clamp(0, round((x - GRID_PAD) / GRID_SPACING),
-                  self.canvas.width_points)
-        y = clamp(0, round((y - GRID_PAD) / GRID_SPACING),
-                  self.canvas.height_points)
-        handler(x, y)
+        ex = clamp(0, (x - GRID_PAD) / GRID_SPACING, self.canvas.width_points)
+        ey = clamp(0, (y - GRID_PAD) / GRID_SPACING, self.canvas.height_points)
+        x  = clamp(0, round((x - GRID_PAD) / GRID_SPACING),
+                   self.canvas.width_points)
+        y  = clamp(0, round((y - GRID_PAD) / GRID_SPACING),
+                   self.canvas.height_points)
+        handler(MousePoint(x, y, ex, ey))
 
     def _handle_tool_mouse_down(self, _e, x, y):
         i = (y // TOOL_DIM) * 2 + (x // TOOL_DIM)

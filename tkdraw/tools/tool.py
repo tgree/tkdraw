@@ -46,7 +46,7 @@ class Tool:
         '''
         raise NotImplementedError
 
-    def handle_mouse_down(self, x, y):
+    def handle_mouse_down(self, p):
         '''
         Handle a mouse down at grid coordinate (x, y) in the canvas.  Note that
         these need to be converted to screen coordinates before drawing
@@ -54,7 +54,7 @@ class Tool:
         '''
         raise NotImplementedError
 
-    def handle_mouse_up(self, x, y):
+    def handle_mouse_up(self, p):
         '''
         Handle a mouse up at grid coordinate (x, y) in the canvas.  Note that
         these need to be converted to screen coordinates before drawing
@@ -62,7 +62,7 @@ class Tool:
         '''
         raise NotImplementedError
 
-    def handle_mouse_moved(self, x, y):
+    def handle_mouse_moved(self, p):
         '''
         Handle a mouse moved event to coordinate (x, y) in the canvas.
         '''

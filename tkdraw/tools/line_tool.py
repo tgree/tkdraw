@@ -51,25 +51,25 @@ class LineTool(Tool):
             if e.keysym == 'Escape':
                 self._go_idle()
 
-    def handle_mouse_down(self, x, y):
+    def handle_mouse_down(self, p):
         assert self.state == State.IDLE
-        self.drag_start = (x, y)
-        self.drag_end   = (x, y)
-        self.drag_line  = self.workspace.add_line(x, y, 0, 0)
+        self.drag_start = (p.x, p.y)
+        self.drag_end   = (p.x, p.y)
+        self.drag_line  = self.workspace.add_line(p.x, p.y, 0, 0)
         self.state      = State.DRAG_STARTED
 
-    def handle_mouse_up(self, x, y):
+    def handle_mouse_up(self, p):
         if self.state == State.DRAG_STARTED:
             self.drag_start = None
             self.drag_end   = None
             self.drag_line  = None
             self.state      = State.IDLE
 
-    def handle_mouse_moved(self, x, y):
+    def handle_mouse_moved(self, p):
         if self.state == State.DRAG_STARTED:
-            self.drag_end = (x, y)
+            self.drag_end = (p.x, p.y)
             self.workspace.move_line(self.drag_line,
                                      self.drag_start[0],
                                      self.drag_start[1],
-                                     x - self.drag_start[0],
-                                     y - self.drag_start[1])
+                                     p.x - self.drag_start[0],
+                                     p.y - self.drag_start[1])

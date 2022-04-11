@@ -23,11 +23,11 @@ class NullTool(Tool):
     def handle_key_pressed(self, e):
         pass
 
-    def handle_mouse_down(self, x, y):
+    def handle_mouse_down(self, p):
         pass
 
-    def handle_mouse_up(self, x, y):
+    def handle_mouse_up(self, p):
         pass
 
-    def handle_mouse_moved(self, x, y):
+    def handle_mouse_moved(self, p):
         pass
