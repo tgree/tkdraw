@@ -144,6 +144,8 @@ class Workspace(TKBase):
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
+        self.elems = []
+
         self.tools = []
         self.selected_tool = None
 
@@ -228,6 +230,9 @@ class Workspace(TKBase):
         if e.widget != self._root:
             return
         self.selected_tool.handle_app_deactivated()
+
+    def add_elem(self, elem):
+        self.elems.append(elem)
 
     def add_line(self, x, y, dx, dy):
         return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,
