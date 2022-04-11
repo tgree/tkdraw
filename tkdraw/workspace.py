@@ -167,7 +167,7 @@ class Workspace(TKBase):
                   self.canvas.height_points)
         handler(x, y)
 
-    def _handle_tool_mouse_down(self, e, x, y):
+    def _handle_tool_mouse_down(self, _e, x, y):
         i = (y // TOOL_DIM) * 2 + (x // TOOL_DIM)
         if i < len(self.tools):
             self.select_tool(self.tools[i])
