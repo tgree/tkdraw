@@ -22,6 +22,9 @@ class CanvasElem(Elem):
             self.ty     = y
             self.by     = y + height
 
+    def configure(self, **kwargs):
+        self._canvas._canvas.itemconfig(self._elem_id, **kwargs)
+
     def bbox(self):
         return self._canvas._bbox(self)
 
@@ -30,6 +33,12 @@ class CanvasElem(Elem):
 
     def set_fill(self, fill):
         self._canvas._set_fill(self, fill)
+
+    def hide(self):
+        self._canvas._hide(self)
+
+    def show(self):
+        self._canvas._show(self)
 
     def contains(self, x, y):
         w = getattr(self, 'width', 0)
@@ -96,6 +105,12 @@ class Canvas:
 
     def _tag_lower(self, bottom_elem, top_elem):
         self._canvas.tag_lower(bottom_elem._elem_id, top_elem._elem_id)
+
+    def _hide(self, elem):
+        self._canvas.itemconfig(elem._elem_id, state='hidden')
+
+    def _show(self, elem):
+        self._canvas.itemconfig(elem._elem_id, state='normal')
 
     def _set_fill(self, elem, fill):
         self._canvas.itemconfig(elem._elem_id, fill=fill)

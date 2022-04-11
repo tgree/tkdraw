@@ -2,16 +2,14 @@ from .tk_elems import TKBase, Canvas
 from . import tools
 
 
-WINDOW_X      = 50
+WINDOW_X      = 10
 WINDOW_Y      = 50
-WINDOW_WIDTH  = 800
-WINDOW_HEIGHT = 500
+TITLE_HEIGHT  = 28
 
-TOOLS_WIDTH  = 100
+TOOL_DIM     = 50
+TOOLS_WIDTH  = 2 * TOOL_DIM
 TOOLS_HEIGHT = 400
 
-DRAW_WIDTH   = WINDOW_WIDTH - TOOLS_WIDTH
-DRAW_HEIGHT  = WINDOW_HEIGHT
 GRID_SPACING = 10
 GRID_PAD     = (GRID_SPACING // 2)
 
@@ -44,6 +42,7 @@ class DrawCanvas(Canvas):
                                                 outline='')
         self.v_pad         = self.add_rectangle(0, 0, 0, 0, fill='white',
                                                 outline='')
+        self.grid_shown    = True
         self.register_handler('<Configure>', self._handle_config_change)
 
     def _handle_config_change(self, e):
@@ -84,17 +83,45 @@ class DrawCanvas(Canvas):
                                    outline='')
             self.v_rects.append(r)
 
+    def hide_grid(self):
+        self.content_rect.set_fill('white')
+        for r in self.h_rects:
+            r.hide()
+        for r in self.v_rects:
+            r.hide()
+        self.grid_shown = False
+
+    def show_grid(self):
+        self.content_rect.set_fill('black')
+        for r in self.h_rects:
+            r.show()
+        for r in self.v_rects:
+            r.show()
+        self.grid_shown = True
+
+    def toggle_grid(self):
+        if self.grid_shown:
+            self.hide_grid()
+        else:
+            self.show_grid()
+
 
 class Workspace(TKBase):
     def __init__(self):
         super().__init__()
 
-        self.set_geometry(WINDOW_X, WINDOW_Y, 800, 500)
+        w  = (self._root.winfo_screenwidth() - 2*WINDOW_X)
+        w -= (w % GRID_SPACING)
+        h  = (self._root.winfo_screenheight() - TITLE_HEIGHT - WINDOW_Y -
+              WINDOW_X)
+        h -= (h % GRID_SPACING)
+
+        self.set_geometry(WINDOW_X, WINDOW_Y, w, h)
         self.tool_canvas = self.add_canvas(TOOLS_WIDTH, TOOLS_HEIGHT, 0, 0,
                                            sticky='nws', _cls=ToolCanvas)
 
-        self.canvas = self.add_canvas(DRAW_WIDTH, DRAW_HEIGHT, 1, 0,
-                                      sticky='nsew', _cls=DrawCanvas)
+        self.canvas = self.add_canvas(1, 1, 1, 0, sticky='nsew',
+                                      _cls=DrawCanvas)
         self._root.columnconfigure(1, weight=1)
         self._root.rowconfigure(0, weight=1)
         self._root.minsize(300, TOOLS_HEIGHT)
@@ -102,13 +129,33 @@ class Workspace(TKBase):
         self.register_mouse_down(self.handle_mouse_down)
         self.register_mouse_up(self.handle_mouse_up)
         self.register_mouse_moved(self.handle_mouse_moved)
+        self.register_handler('<KeyPress>', self.handle_key_pressed)
         self.register_handler('<Configure>', self.handle_config_change)
+        self.register_handler('<Activate>', self.handle_activate)
+        self.register_handler('<Deactivate>', self.handle_deactivate)
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
-        self.tools = [tools.LineTool(self)]
-        self.selected_tool = self.tools[0]
-        self.selected_tool.handle_tool_selected()
+        self.tools = []
+        self.selected_tool = None
+
+        tool_classes = [tools.NullTool,
+                        tools.LineTool,
+                        ]
+        for i, tcls in enumerate(tool_classes):
+            x = (i % 2) * TOOL_DIM
+            y = (i // 2) * TOOL_DIM
+            t = tcls(self, x, y, TOOL_DIM - 2, TOOL_DIM - 2)
+            self.tools.append(t)
+
+        self.select_tool(self.tools[0])
+
+    def select_tool(self, t):
+        if self.selected_tool:
+            self.selected_tool.handle_tool_deselected()
+        self.selected_tool = t
+        if self.selected_tool:
+            self.selected_tool.handle_tool_selected()
 
     def _handle_mouse_event(self, e, x, y, handler):
         if e.widget != self.canvas._canvas:
@@ -120,14 +167,29 @@ class Workspace(TKBase):
                   self.canvas.height_points)
         handler(x, y)
 
+    def _handle_tool_mouse_down(self, e, x, y):
+        i = (y // TOOL_DIM) * 2 + (x // TOOL_DIM)
+        if i < len(self.tools):
+            self.select_tool(self.tools[i])
+
     def handle_mouse_down(self, _, e, x, y):
-        self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_down)
+        if e.widget == self.tool_canvas._canvas:
+            self._handle_tool_mouse_down(e, x, y)
+        else:
+            self._handle_mouse_event(e, x, y,
+                                     self.selected_tool.handle_mouse_down)
 
     def handle_mouse_up(self, _, e, x, y):
         self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_up)
 
     def handle_mouse_moved(self, _, e, x, y):
         self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_moved)
+
+    def handle_key_pressed(self, e):
+        if e.char in ('g', 'G'):
+            self.canvas.toggle_grid()
+        else:
+            self.selected_tool.handle_key_pressed(e)
 
     def handle_canvas_entered(self, _e):
         self.selected_tool.handle_canvas_entered()
@@ -146,6 +208,16 @@ class Workspace(TKBase):
         if e.height != h or e.width != w:
             x, y, _, _ = self.get_geometry()
             self.set_geometry(x, y, w, h)
+
+    def handle_activate(self, e):
+        if e.widget != self._root:
+            return
+        self.selected_tool.handle_app_activated()
+
+    def handle_deactivate(self, e):
+        if e.widget != self._root:
+            return
+        self.selected_tool.handle_app_deactivated()
 
     def add_line(self, x, y, dx, dy):
         return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,

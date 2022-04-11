@@ -9,26 +9,47 @@ class State(Enum):
 
 
 class LineTool(Tool):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, workspace, x, y, w, h, *args, **kwargs):
+        super().__init__(workspace, x, y, w, h, *args, **kwargs)
         self.state      = State.IDLE
         self.drag_start = None
         self.drag_end   = None
         self.drag_line  = None
+        self.icon_line  = workspace.tool_canvas.add_line(x + 10, y + 10,
+                                                         w - 20, h - 20)
+
+    def _go_idle(self):
+        if self.state == State.DRAG_STARTED:
+            self.workspace.delete_line(self.drag_line)
+            self.drag_start = None
+            self.drag_end   = None
+            self.drag_line  = None
+            self.state      = State.IDLE
+
+    def handle_app_activated(self):
+        assert self.state == State.IDLE
+
+    def handle_app_deactivated(self):
+        self._go_idle()
 
     def handle_tool_selected(self):
+        self.icon_border.configure(outline='black')
         assert self.state == State.IDLE
 
     def handle_tool_deselected(self):
-        if self.state == State.DRAG_STARTED:
-            self.workspace.delete_line(self.drag_line)
-            self.state = State.IDLE
+        self.icon_border.configure(outline='#CCCCCC')
+        self._go_idle()
 
     def handle_canvas_entered(self):
         self.workspace._root.configure(cursor='tcross')
 
     def handle_canvas_exited(self):
         self.workspace._root.configure(cursor='arrow')
+
+    def handle_key_pressed(self, e):
+        if self.state == State.DRAG_STARTED:
+            if e.keysym == 'Escape':
+                self._go_idle()
 
     def handle_mouse_down(self, x, y):
         assert self.state == State.IDLE
@@ -39,7 +60,6 @@ class LineTool(Tool):
 
     def handle_mouse_up(self, x, y):
         if self.state == State.DRAG_STARTED:
-            assert self.drag_line is not None
             self.drag_start = None
             self.drag_end   = None
             self.drag_line  = None
