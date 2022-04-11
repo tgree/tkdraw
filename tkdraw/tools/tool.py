@@ -1,6 +1,8 @@
 class Tool:
-    def __init__(self, workspace):
-        self.workspace = workspace
+    def __init__(self, workspace, x, y, w, h):
+        self.workspace   = workspace
+        self.icon_border = self.workspace.tool_canvas.add_rectangle(
+                x, y, w, h, outline='#CCCCCC')
 
     def handle_app_activated(self):
         '''

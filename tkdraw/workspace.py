@@ -6,7 +6,8 @@ WINDOW_X      = 10
 WINDOW_Y      = 50
 TITLE_HEIGHT  = 28
 
-TOOLS_WIDTH  = 100
+TOOL_DIM     = 50
+TOOLS_WIDTH  = 2 * TOOL_DIM
 TOOLS_HEIGHT = 400
 
 GRID_SPACING = 10
@@ -135,9 +136,25 @@ class Workspace(TKBase):
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
-        self.tools = [tools.LineTool(self)]
-        self.selected_tool = self.tools[0]
-        self.selected_tool.handle_tool_selected()
+        self.tools = []
+        self.selected_tool = None
+
+        tool_classes = [tools.LineTool,
+                        ]
+        for i, tcls in enumerate(tool_classes):
+            x = (i % 2) * TOOL_DIM
+            y = (i // 2) * TOOL_DIM
+            t = tcls(self, x, y, TOOL_DIM - 2, TOOL_DIM - 2)
+            self.tools.append(t)
+
+        self.select_tool(self.tools[0])
+
+    def select_tool(self, t):
+        if self.selected_tool:
+            self.selected_tool.handle_tool_deselected()
+        self.selected_tool = t
+        if self.selected_tool:
+            self.selected_tool.handle_tool_selected()
 
     def _handle_mouse_event(self, e, x, y, handler):
         if e.widget != self.canvas._canvas:
