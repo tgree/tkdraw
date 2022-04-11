@@ -105,7 +105,10 @@ class Workspace(TKBase):
         self.register_mouse_down(self.handle_mouse_down)
         self.register_mouse_up(self.handle_mouse_up)
         self.register_mouse_moved(self.handle_mouse_moved)
+        self.register_handler('<KeyPress>', self.handle_key_pressed)
         self.register_handler('<Configure>', self.handle_config_change)
+        self.register_handler('<Activate>', self.handle_activate)
+        self.register_handler('<Deactivate>', self.handle_deactivate)
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
@@ -132,6 +135,9 @@ class Workspace(TKBase):
     def handle_mouse_moved(self, _, e, x, y):
         self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_moved)
 
+    def handle_key_pressed(self, e):
+        self.selected_tool.handle_key_pressed(e)
+
     def handle_canvas_entered(self, _e):
         self.selected_tool.handle_canvas_entered()
 
@@ -149,6 +155,16 @@ class Workspace(TKBase):
         if e.height != h or e.width != w:
             x, y, _, _ = self.get_geometry()
             self.set_geometry(x, y, w, h)
+
+    def handle_activate(self, e):
+        if e.widget != self._root:
+            return
+        self.selected_tool.handle_app_activated()
+
+    def handle_deactivate(self, e):
+        if e.widget != self._root:
+            return
+        self.selected_tool.handle_app_deactivated()
 
     def add_line(self, x, y, dx, dy):
         return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,
