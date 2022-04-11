@@ -224,7 +224,7 @@ class Workspace(TKBase):
                                     y * GRID_SPACING + GRID_PAD,
                                     dx * GRID_SPACING, dy * GRID_SPACING)
 
-    def delete_line(self, l):
+    def delete_canvas_elem(self, l):
         self.canvas.delete_elem(l)
 
     @staticmethod

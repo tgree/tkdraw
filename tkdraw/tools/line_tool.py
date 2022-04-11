@@ -20,7 +20,7 @@ class LineTool(Tool):
 
     def _go_idle(self):
         if self.state == State.DRAG_STARTED:
-            self.workspace.delete_line(self.drag_line)
+            self.workspace.delete_canvas_elem(self.drag_line)
             self.drag_start = None
             self.drag_end   = None
             self.drag_line  = None
