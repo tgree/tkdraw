@@ -1,4 +1,4 @@
-from .tk_elems import TKBase, Canvas
+from .tk.elems import TKBase, Canvas
 from . import tools
 
 
@@ -16,6 +16,14 @@ GRID_PAD     = (GRID_SPACING // 2)
 
 def clamp(l, v, r):
     return l if v < l else r if v > r else v
+
+
+class MousePoint:
+    def __init__(self, x, y, ex, ey):
+        self.x  = x
+        self.y  = y
+        self.ex = ex
+        self.ey = ey
 
 
 class ToolCanvas(Canvas):
@@ -136,11 +144,14 @@ class Workspace(TKBase):
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
 
+        self.elems = []
+
         self.tools = []
         self.selected_tool = None
 
         tool_classes = [tools.NullTool,
                         tools.LineTool,
+                        tools.NearestTool,
                         ]
         for i, tcls in enumerate(tool_classes):
             x = (i % 2) * TOOL_DIM
@@ -161,13 +172,15 @@ class Workspace(TKBase):
         if e.widget != self.canvas._canvas:
             return
 
-        x = clamp(0, round((x - GRID_PAD) / GRID_SPACING),
-                  self.canvas.width_points)
-        y = clamp(0, round((y - GRID_PAD) / GRID_SPACING),
-                  self.canvas.height_points)
-        handler(x, y)
+        ex = clamp(0, (x - GRID_PAD) / GRID_SPACING, self.canvas.width_points)
+        ey = clamp(0, (y - GRID_PAD) / GRID_SPACING, self.canvas.height_points)
+        x  = clamp(0, round((x - GRID_PAD) / GRID_SPACING),
+                   self.canvas.width_points)
+        y  = clamp(0, round((y - GRID_PAD) / GRID_SPACING),
+                   self.canvas.height_points)
+        handler(MousePoint(x, y, ex, ey))
 
-    def _handle_tool_mouse_down(self, e, x, y):
+    def _handle_tool_mouse_down(self, _e, x, y):
         i = (y // TOOL_DIM) * 2 + (x // TOOL_DIM)
         if i < len(self.tools):
             self.select_tool(self.tools[i])
@@ -191,8 +204,9 @@ class Workspace(TKBase):
         else:
             self.selected_tool.handle_key_pressed(e)
 
-    def handle_canvas_entered(self, _e):
-        self.selected_tool.handle_canvas_entered()
+    def handle_canvas_entered(self, e):
+        self._handle_mouse_event(e, e.x, e.y,
+                                 self.selected_tool.handle_canvas_entered)
 
     def handle_canvas_exited(self, _e):
         self.selected_tool.handle_canvas_exited()
@@ -219,15 +233,23 @@ class Workspace(TKBase):
             return
         self.selected_tool.handle_app_deactivated()
 
+    def add_elem(self, elem):
+        self.elems.append(elem)
+
     def add_line(self, x, y, dx, dy):
         return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,
                                     y * GRID_SPACING + GRID_PAD,
                                     dx * GRID_SPACING, dy * GRID_SPACING)
 
-    def delete_line(self, l):
+    def delete_canvas_elem(self, l):
         self.canvas.delete_elem(l)
 
     @staticmethod
     def move_line(l, x, y, dx, dy):
         l.move_line(x * GRID_SPACING + GRID_PAD, y * GRID_SPACING + GRID_PAD,
                     dx * GRID_SPACING, dy * GRID_SPACING)
+
+    @staticmethod
+    def move_to(elem, x, y, fine_dx=0, fine_dy=0):
+        elem.move_to(x * GRID_SPACING + GRID_PAD + fine_dx,
+                     y * GRID_SPACING + GRID_PAD + fine_dy)

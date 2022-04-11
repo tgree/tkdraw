@@ -14,7 +14,7 @@ class NullTool(Tool):
     def handle_tool_deselected(self):
         self.icon_border.configure(outline='#CCCCCC')
 
-    def handle_canvas_entered(self):
+    def handle_canvas_entered(self, p):
         pass
 
     def handle_canvas_exited(self):
@@ -23,11 +23,11 @@ class NullTool(Tool):
     def handle_key_pressed(self, e):
         pass
 
-    def handle_mouse_down(self, x, y):
+    def handle_mouse_down(self, p):
         pass
 
-    def handle_mouse_up(self, x, y):
+    def handle_mouse_up(self, p):
         pass
 
-    def handle_mouse_moved(self, x, y):
+    def handle_mouse_moved(self, p):
         pass
