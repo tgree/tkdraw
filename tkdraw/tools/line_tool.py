@@ -9,12 +9,14 @@ class State(Enum):
 
 
 class LineTool(Tool):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, workspace, x, y, w, h, *args, **kwargs):
+        super().__init__(workspace, x, y, w, h, *args, **kwargs)
         self.state      = State.IDLE
         self.drag_start = None
         self.drag_end   = None
         self.drag_line  = None
+        self.icon_line  = workspace.tool_canvas.add_line(x + 10, y + 10,
+                                                         w - 20, h - 20)
 
     def _go_idle(self):
         if self.state == State.DRAG_STARTED:
