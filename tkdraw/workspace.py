@@ -41,6 +41,7 @@ class DrawCanvas(Canvas):
                                                 outline='')
         self.v_pad         = self.add_rectangle(0, 0, 0, 0, fill='white',
                                                 outline='')
+        self.grid_shown    = True
         self.register_handler('<Configure>', self._handle_config_change)
 
     def _handle_config_change(self, e):
@@ -80,6 +81,28 @@ class DrawCanvas(Canvas):
                                    GRID_SPACING - 1, e.height, fill='white',
                                    outline='')
             self.v_rects.append(r)
+
+    def hide_grid(self):
+        self.content_rect.set_fill('white')
+        for r in self.h_rects:
+            r.hide()
+        for r in self.v_rects:
+            r.hide()
+        self.grid_shown = False
+
+    def show_grid(self):
+        self.content_rect.set_fill('black')
+        for r in self.h_rects:
+            r.show()
+        for r in self.v_rects:
+            r.show()
+        self.grid_shown = True
+
+    def toggle_grid(self):
+        if self.grid_shown:
+            self.hide_grid()
+        else:
+            self.show_grid()
 
 
 class Workspace(TKBase):
@@ -136,7 +159,10 @@ class Workspace(TKBase):
         self._handle_mouse_event(e, x, y, self.selected_tool.handle_mouse_moved)
 
     def handle_key_pressed(self, e):
-        self.selected_tool.handle_key_pressed(e)
+        if e.char in ('g', 'G'):
+            self.canvas.toggle_grid()
+        else:
+            self.selected_tool.handle_key_pressed(e)
 
     def handle_canvas_entered(self, _e):
         self.selected_tool.handle_canvas_entered()
