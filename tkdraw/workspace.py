@@ -1,4 +1,4 @@
-from .tk_elems import TKBase, Canvas
+from .tk.elems import TKBase, Canvas
 from . import tools
 
 
