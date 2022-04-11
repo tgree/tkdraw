@@ -28,7 +28,7 @@ class Tool:
         '''
         raise NotImplementedError
 
-    def handle_canvas_entered(self):
+    def handle_canvas_entered(self, p):
         '''
         The mouse has entered the canvas.
         '''

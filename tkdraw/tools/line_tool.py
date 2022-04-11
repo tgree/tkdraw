@@ -37,7 +37,7 @@ class LineTool(Tool):
         self.icon_border.configure(outline='#CCCCCC')
         self._go_idle()
 
-    def handle_canvas_entered(self):
+    def handle_canvas_entered(self, p):
         self.workspace._root.configure(cursor='tcross')
 
     def handle_canvas_exited(self):

@@ -203,8 +203,9 @@ class Workspace(TKBase):
         else:
             self.selected_tool.handle_key_pressed(e)
 
-    def handle_canvas_entered(self, _e):
-        self.selected_tool.handle_canvas_entered()
+    def handle_canvas_entered(self, e):
+        self._handle_mouse_event(e, e.x, e.y,
+                                 self.selected_tool.handle_canvas_entered)
 
     def handle_canvas_exited(self, _e):
         self.selected_tool.handle_canvas_exited()
