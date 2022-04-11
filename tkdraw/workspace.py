@@ -2,16 +2,13 @@ from .tk_elems import TKBase, Canvas
 from . import tools
 
 
-WINDOW_X      = 50
+WINDOW_X      = 10
 WINDOW_Y      = 50
-WINDOW_WIDTH  = 800
-WINDOW_HEIGHT = 500
+TITLE_HEIGHT  = 28
 
 TOOLS_WIDTH  = 100
 TOOLS_HEIGHT = 400
 
-DRAW_WIDTH   = WINDOW_WIDTH - TOOLS_WIDTH
-DRAW_HEIGHT  = WINDOW_HEIGHT
 GRID_SPACING = 10
 GRID_PAD     = (GRID_SPACING // 2)
 
@@ -89,12 +86,18 @@ class Workspace(TKBase):
     def __init__(self):
         super().__init__()
 
-        self.set_geometry(WINDOW_X, WINDOW_Y, 800, 500)
+        w  = (self._root.winfo_screenwidth() - 2*WINDOW_X)
+        w -= (w % GRID_SPACING)
+        h  = (self._root.winfo_screenheight() - TITLE_HEIGHT - WINDOW_Y -
+              WINDOW_X)
+        h -= (h % GRID_SPACING)
+
+        self.set_geometry(WINDOW_X, WINDOW_Y, w, h)
         self.tool_canvas = self.add_canvas(TOOLS_WIDTH, TOOLS_HEIGHT, 0, 0,
                                            sticky='nws', _cls=ToolCanvas)
 
-        self.canvas = self.add_canvas(DRAW_WIDTH, DRAW_HEIGHT, 1, 0,
-                                      sticky='nsew', _cls=DrawCanvas)
+        self.canvas = self.add_canvas(1, 1, 1, 0, sticky='nsew',
+                                      _cls=DrawCanvas)
         self._root.columnconfigure(1, weight=1)
         self._root.rowconfigure(0, weight=1)
         self._root.minsize(300, TOOLS_HEIGHT)
