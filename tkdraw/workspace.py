@@ -241,6 +241,11 @@ class Workspace(TKBase):
                                     y * GRID_SPACING + GRID_PAD,
                                     dx * GRID_SPACING, dy * GRID_SPACING)
 
+    def add_rectangle(self, x, y, fine_dx, fine_dy, w, h, **kwargs):
+        return self.canvas.add_rectangle(x * GRID_SPACING + GRID_PAD + fine_dx,
+                                         y * GRID_SPACING + GRID_PAD + fine_dy,
+                                         w, h, **kwargs)
+
     def delete_canvas_elem(self, l):
         self.canvas.delete_elem(l)
 
