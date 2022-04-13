@@ -6,12 +6,14 @@ class NearestTool(Tool):
         super().__init__(workspace, x, y, w, h, *args, **kwargs)
         self.icon_rect = workspace.tool_canvas.add_rectangle(
                 x + 20, y + 20, 10, 10, fill='black')
-        self.point = None
+        self.points = []
+        self.nearest_elem = None
 
     def _go_idle(self):
-        if self.point:
-            self.workspace.delete_canvas_elem(self.point)
-            self.point = None
+        for p in self.points:
+            self.workspace.delete_canvas_elem(p)
+        self.points = []
+        self.nearest_elem = None
 
     def handle_app_activated(self):
         pass
@@ -27,8 +29,6 @@ class NearestTool(Tool):
         self.icon_border.configure(outline='#CCCCCC')
 
     def handle_canvas_entered(self, p):
-        self.point = self.workspace.canvas.add_rectangle(
-                0, 0, 4, 4, fill='black')
         self.handle_mouse_moved(p)
 
     def handle_canvas_exited(self):
@@ -44,6 +44,25 @@ class NearestTool(Tool):
         pass
 
     def handle_mouse_moved(self, p):
-        if self.workspace.elems:
-            px, py = self.workspace.elems[0].nearest_point(p.ex, p.ey)
-            self.workspace.move_to(self.point, px, py, -2, -2)
+        if not self.workspace.elems:
+            return
+
+        nearest = None
+        for e in self.workspace.elems:
+            px, py = e.nearest_point(p.ex, p.ey)
+            d_2    = (p.ex - px)**2 + (p.ey - py)**2
+            if not nearest or d_2 < nearest[0]:
+                nearest = (d_2, px, py, e)
+
+        if nearest[0] >= 4:
+            self._go_idle()
+            return
+
+        if nearest[3] == self.nearest_elem:
+            return
+        
+        self._go_idle()
+        for h in nearest[3].handles:
+            self.points.append(self.workspace.add_rectangle(
+                h[0], h[1], -2, -2, 4, 4, fill='black'))
+        self.nearest_elem = nearest[3]
