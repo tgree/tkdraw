@@ -2,6 +2,7 @@ import numpy as np
 
 from .elem import Elem
 from .. import coords
+from .. import geom
 
 
 class LineElem(Elem):
@@ -79,3 +80,12 @@ class LineElem(Elem):
         t  = 0 if t < 0 else 1 if t > 1 else t
         p  = h0 + t * v
         return p[0], p[1]
+
+    def overlaps_rect(self, R):
+        '''
+        Returns True if this line segment partially or fully overlaps the
+        rectangle R.  Returns False otherwise.
+        '''
+        S = geom.LineSegment(geom.Vec(self.handles[0][0], self.handles[0][1]),
+                             geom.Vec(self.handles[1][0], self.handles[1][1]))
+        return R.overlaps_segment(S)
