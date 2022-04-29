@@ -36,7 +36,7 @@ class SelectionTool(Tool):
         for se in elems_set:
             for h in se.handles:
                 points_list.append(self.workspace.add_rectangle(
-                    h[0], h[1], -2, -2, 4, 4, fill='black'))
+                    h.x, h.y, -2, -2, 4, 4, fill='black'))
 
     def _remove_handle_points(self, points_list):
         for p in points_list:
@@ -65,24 +65,25 @@ class SelectionTool(Tool):
 
         nearest = None
         for e in self.workspace.doc.elems:
-            px, py = e.nearest_point(p.ex, p.ey)
-            d_2    = (p.ex - px)**2 + (p.ey - py)**2
-            if not nearest or d_2 < nearest[0]:  # pylint: disable=E1136
-                nearest = (d_2, px, py, e)
+            v  = geom.Vec(p.ex, p.ey)
+            dv = e.nearest_point(v) - v
+            nn = dv.norm_squared()
+            if not nearest or nn < nearest[0]:  # pylint: disable=E1136
+                nearest = (nn, e)
 
         if nearest[0] >= 4:
             self._remove_nearest_points()
             self.nearest_elem = None
             return
 
-        if nearest[3] == self.nearest_elem:
+        if nearest[1] == self.nearest_elem:
             return
 
         self._remove_nearest_points()
-        self.nearest_elem = nearest[3]
+        self.nearest_elem = nearest[1]
         for h in self.nearest_elem.handles:
             self.nearest_points.append(self.workspace.add_rectangle(
-                h[0], h[1], -3, -3, 6, 6))
+                h.x, h.y, -3, -3, 6, 6))
 
     def _remove_nearest_points(self):
         self._remove_handle_points(self.nearest_points)

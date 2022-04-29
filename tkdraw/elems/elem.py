@@ -5,5 +5,5 @@ class Elem:
     def nudge(self, dx, dy):
         raise NotImplementedError
 
-    def nearest_point(self, x, y):
+    def nearest_point(self, P):
         raise NotImplementedError

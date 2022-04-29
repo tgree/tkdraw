@@ -2,6 +2,7 @@ from enum import Enum
 
 from .tool import Tool
 from ..elems import LineElem
+from .. import geom
 
 
 class State(Enum):
@@ -50,13 +51,14 @@ class LineTool(Tool):
 
     def handle_mouse_down(self, p):
         assert self.state == State.IDLE
+        v              = geom.Vec(p.x, p.y)
         tk_elem        = self.workspace.add_line(p.x, p.y, 0, 0)
-        self.line_elem = LineElem(tk_elem, p.x, p.y, 0, 0)
+        self.line_elem = LineElem(tk_elem, v, v)
         self.state     = State.DRAG_STARTED
 
     def handle_mouse_up(self, p):
         if self.state == State.DRAG_STARTED:
-            if self.line_elem.handles[0] == self.line_elem.handles[1]:
+            if self.line_elem.segment.line.dt2 == 0:
                 self._go_idle()
                 return
 
@@ -66,7 +68,5 @@ class LineTool(Tool):
 
     def handle_mouse_moved(self, p):
         if self.state == State.DRAG_STARTED:
-            self.line_elem.move_line(self.line_elem.handles[0][0],
-                                     self.line_elem.handles[0][1],
-                                     p.x - self.line_elem.handles[0][0],
-                                     p.y - self.line_elem.handles[0][1])
+            self.line_elem.move_line(self.line_elem.segment.line.p0,
+                                     geom.Vec(p.x, p.y))
