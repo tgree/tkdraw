@@ -6,6 +6,8 @@ class NearestTool(Tool):
         super().__init__(workspace, x, y, w, h, *args, **kwargs)
         self.nearest_elem    = None
         self.nearest_points  = []
+        self.selected_elem   = None
+        self.selected_points = []
         self.icon_rect = workspace.tool_canvas.add_rectangle(
                 x + 20, y + 20, 10, 10, fill='black')
 
@@ -15,8 +17,15 @@ class NearestTool(Tool):
         self.nearest_points = []
         self.nearest_elem   = None
 
+    def _remove_selected_points(self):
+        for p in self.selected_points:
+            self.workspace.delete_canvas_elem(p)
+        self.selected_points = []
+        self.selected_elem   = None
+
     def _go_idle(self):
         self._remove_nearest_points()
+        self._remove_selected_points()
 
     def handle_app_activated(self):
         pass
@@ -41,7 +50,17 @@ class NearestTool(Tool):
         pass
 
     def handle_mouse_down(self, p):
-        pass
+        for p in self.selected_points:
+            self.workspace.delete_canvas_elem(p)
+        self.selected_points = []
+
+        self.selected_elem = self.nearest_elem
+        if not self.selected_elem:
+            return
+
+        for h in self.selected_elem.handles:
+            self.selected_points.append(self.workspace.add_rectangle(
+                h[0], h[1], -2, -2, 4, 4, fill='black'))
 
     def handle_mouse_up(self, p):
         pass
