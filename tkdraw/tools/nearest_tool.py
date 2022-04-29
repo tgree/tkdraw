@@ -107,6 +107,9 @@ class NearestTool(Tool):
                 self.nearest_elem = None
             if self.last_mouse_point:
                 self._add_nearest_points(self.last_mouse_point)
+        elif e.keysym == 'Escape':
+            self._remove_selected_points()
+            self.selected_elems.clear()
 
     def handle_mouse_down(self, p):
         shift_click = (p.modifiers & 1)
