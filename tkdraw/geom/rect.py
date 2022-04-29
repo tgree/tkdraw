@@ -24,6 +24,10 @@ class Rect:
     def __sub__(self, other):
         return Rect(self.p0 - other, self.p1 - other)
 
+    @staticmethod
+    def zero():
+        return Rect(Vec(0, 0), Vec(0, 0))
+
     def line_intersection_ts(self, L):
         '''
         Returns all t values for the line L that intersect any edge segment of
