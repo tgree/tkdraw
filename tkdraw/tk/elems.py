@@ -121,7 +121,7 @@ class Canvas:
     def _set_text(self, elem, text):
         self._canvas.itemconfig(elem._elem_id, text=text)
 
-    def add_lines(self, vertices, **kwargs):
+    def _vertices_to_args(self, vertices):
         min_x = min(v[0] for v in vertices)
         max_x = max(v[0] for v in vertices)
         min_y = min(v[1] for v in vertices)
@@ -132,6 +132,10 @@ class Canvas:
         for v in vertices:
             args.append(v[0])
             args.append(v[1])
+        return args, min_x, min_y, w, h
+
+    def add_lines(self, vertices, **kwargs):
+        args, min_x, min_y, w, h = self._vertices_to_args(vertices)
         elem_id = self._canvas.create_line(*args, **kwargs)
         return LineElem(self, elem_id, min_x, min_y, w, h)
 
