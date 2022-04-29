@@ -60,11 +60,11 @@ class SelectionTool(Tool):
         self._remove_handle_points(self.select_rect_points)
 
     def _add_nearest_points(self, p):
-        if not self.workspace.elems:
+        if not self.workspace.doc.elems:
             return
 
         nearest = None
-        for e in self.workspace.elems:
+        for e in self.workspace.doc.elems:
             px, py = e.nearest_point(p.ex, p.ey)
             d_2    = (p.ex - px)**2 + (p.ey - py)**2
             if not nearest or d_2 < nearest[0]:  # pylint: disable=E1136
@@ -241,7 +241,7 @@ class SelectionTool(Tool):
 
             self._remove_select_rect_points()
             self.select_rect_elems.clear()
-            for e in self.workspace.elems:
+            for e in self.workspace.doc.elems:
                 if e.overlaps_rect(self.select_rect):
                     self.select_rect_elems.add(e)
             self._add_select_rect_points()
