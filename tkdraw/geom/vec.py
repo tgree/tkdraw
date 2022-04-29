@@ -13,6 +13,9 @@ class Vec:
     def __repr__(self):
         return 'Vec(%s, %s)' % (self.x, self.y)
 
+    def __bool__(self):
+        return self.x != 0 or self.y != 0
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 

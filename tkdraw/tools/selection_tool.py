@@ -6,6 +6,14 @@ from .. import coords
 from .. import icons
 
 
+ARROW_DV = {
+    'Left'  : geom.Vec(-1,  0),
+    'Right' : geom.Vec( 1,  0),
+    'Up'    : geom.Vec( 0, -1),
+    'Down'  : geom.Vec( 0,  1),
+}
+
+
 class State(Enum):
     IDLE         = 0
     DRAG_STARTED = 1     # Clicked on an elem and dragging
@@ -89,12 +97,12 @@ class SelectionTool(Tool):
     def _remove_nearest_points(self):
         self._remove_handle_points(self.nearest_points)
 
-    def _translate_elems(self, elems, dx, dy):
-        if dx == 0 and dy == 0:
+    def _translate_elems(self, elems, dv):
+        if not dv:
             return
 
         for e in elems:
-            e.translate(dx, dy)
+            e.translate(dv)
 
         self._update_selected_points()
         if self.nearest_elem:
@@ -162,16 +170,9 @@ class SelectionTool(Tool):
         self.last_mouse_point = None
 
     def handle_key_pressed(self, e):
-        if e.keysym in ('Left', 'Right', 'Up', 'Down'):
-            if e.keysym == 'Left':
-                dx, dy = -1, 0
-            elif e.keysym == 'Right':
-                dx, dy = 1, 0
-            elif e.keysym == 'Up':
-                dx, dy = 0, -1
-            elif e.keysym == 'Down':
-                dx, dy = 0, 1
-            self._translate_elems(self.selected_elems, dx, dy)
+        dv = ARROW_DV.get(e.keysym)
+        if dv is not None:
+            self._translate_elems(self.selected_elems, dv)
         elif e.keysym == 'Escape':
             self.handle_esc_pressed()
 
@@ -180,9 +181,8 @@ class SelectionTool(Tool):
             self._remove_selected_points()
             self.selected_elems.clear()
         elif self.state == State.DRAG_STARTED:
-            dx = self.drag_p0.x - self.drag_p1.x
-            dy = self.drag_p0.y - self.drag_p1.y
-            self._translate_elems(self.selected_elems, dx, dy)
+            dv = self.drag_p0 - self.drag_p1
+            self._translate_elems(self.selected_elems, dv)
             self.drag_p0 = None
             self.drag_p1 = None
             self.state   = State.IDLE
@@ -227,10 +227,9 @@ class SelectionTool(Tool):
         if self.state == State.IDLE:
             self._add_nearest_points(p)
         elif self.state == State.DRAG_STARTED:
-            dx = p.x - self.drag_p1.x
-            dy = p.y - self.drag_p1.y
+            dv           = geom.Vec(p.x, p.y) - self.drag_p1
             self.drag_p1 = p
-            self._translate_elems(self.selected_elems, dx, dy)
+            self._translate_elems(self.selected_elems, dv)
         elif self.state == State.RECT_STARTED:
             self.select_rect = geom.Rect(self.select_rect.p0,
                                          geom.Vec(p.x, p.y))

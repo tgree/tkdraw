@@ -30,9 +30,8 @@ class LineElem(Elem):
                 coords.grid_to_canvas_delta(self.segment.line.dt.x),
                 coords.grid_to_canvas_delta(self.segment.line.dt.y))
 
-    def translate(self, dx, dy):
-        d = geom.Vec(dx, dy)
-        self.move_line(self.segment.line.p0 + d, self.segment.line.p1 + d)
+    def translate(self, dv):
+        self.move_line(self.segment.line.p0 + dv, self.segment.line.p1 + dv)
 
     def nearest_point(self, P):
         '''
