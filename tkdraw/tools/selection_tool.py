@@ -77,7 +77,7 @@ class SelectionTool(Tool):
 
         if nearest[3] == self.nearest_elem:
             return
-        
+
         self._remove_nearest_points()
         self.nearest_elem = nearest[3]
         for h in self.nearest_elem.handles:
