@@ -18,6 +18,12 @@ class Rect:
             LineSegment(p3, p0),
             ]
 
+    def __add__(self, other):
+        return Rect(self.p0 + other, self.p1 + other)
+
+    def __sub__(self, other):
+        return Rect(self.p0 - other, self.p1 - other)
+
     def line_intersection_ts(self, L):
         '''
         Returns all t values for the line L that intersect any edge segment of
