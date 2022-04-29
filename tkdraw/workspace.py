@@ -17,11 +17,12 @@ def clamp(l, v, r):
 
 
 class MousePoint:
-    def __init__(self, x, y, ex, ey):
-        self.x  = x
-        self.y  = y
-        self.ex = ex
-        self.ey = ey
+    def __init__(self, x, y, ex, ey, modifiers):
+        self.x         = x
+        self.y         = y
+        self.ex        = ex
+        self.ey        = ey
+        self.modifiers = modifiers
 
 
 class ToolCanvas(Canvas):
@@ -172,7 +173,7 @@ class Workspace(TKBase):
                    self.canvas.width_points)
         y  = clamp(0, coords.canvasy_to_gridy_round(y),
                    self.canvas.height_points)
-        handler(MousePoint(x, y, ex, ey))
+        handler(MousePoint(x, y, ex, ey, e.state))
 
     def _handle_tool_mouse_down(self, _e, x, y):
         i = (y // TOOL_DIM) * 2 + (x // TOOL_DIM)
