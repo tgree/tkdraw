@@ -26,6 +26,9 @@ class Rect:
 
     @staticmethod
     def zero():
+        '''
+        Returns a (0, 0) - (0, 0) rectangle.
+        '''
         return Rect(Vec(0, 0), Vec(0, 0))
 
     def line_intersection_ts(self, L):
