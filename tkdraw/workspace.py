@@ -1,6 +1,7 @@
 from .tk.elems import TKBase, Canvas
 from . import tools
 from . import coords
+from . import geom
 from . import document
 
 
@@ -17,10 +18,9 @@ def clamp(l, v, r):
     return l if v < l else r if v > r else v
 
 
-class MousePoint:
+class MousePoint(geom.Vec):
     def __init__(self, x, y, ex, ey, modifiers):
-        self.x         = x
-        self.y         = y
+        super().__init__(x, y)
         self.ex        = ex
         self.ey        = ey
         self.modifiers = modifiers
