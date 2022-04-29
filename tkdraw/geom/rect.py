@@ -31,6 +31,27 @@ class Rect:
         '''
         return Rect(Vec(0, 0), Vec(0, 0))
 
+    @staticmethod
+    def origin(w, h):
+        '''
+        Returns a rectangle of width w and height h centered at the origin.
+        '''
+        return Rect(Vec(-w/2, -h/2), Vec(w/2, h/2))
+
+    @staticmethod
+    def square(l):
+        '''
+        Returns a square with dimension l centered at the origin.
+        '''
+        return Rect.origin(l, l)
+
+    @staticmethod
+    def from_vec(v):
+        '''
+        Returns a (0, 0) - (v.x, v.y) rectangle.
+        '''
+        return Rect(Vec(0, 0), v)
+
     def line_intersection_ts(self, L):
         '''
         Returns all t values for the line L that intersect any edge segment of
