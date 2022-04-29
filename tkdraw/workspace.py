@@ -234,15 +234,25 @@ class Workspace(TKBase):
         self.selected_tool.handle_app_deactivated()
 
     def add_line(self, p0, p1):
+        '''
+        Add a line in grid coordinates to the workspace.
+        '''
         return self.canvas.add_line(coords.gridp_to_canvasp(p0),
                                     coords.gridp_to_canvasp(p1))
 
     def add_rectangle(self, R, **kwargs):
+        '''
+        Add a rectangle in grid coordinates to the workspace.
+        '''
         R = geom.Rect(coords.gridp_to_canvasp(R.p0),
                       coords.gridp_to_canvasp(R.p1))
         return self.canvas.add_rectangle(R, **kwargs)
 
     def add_fine_rectangle(self, P, R, **kwargs):
+        '''
+        Add a rectangle finely sized in canvas coordinates centered at the
+        grid point P to the workspace.
+        '''
         P = coords.gridp_to_canvasp(P)
         return self.canvas.add_rectangle(R + P, **kwargs)
 
