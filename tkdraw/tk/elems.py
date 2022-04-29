@@ -121,7 +121,8 @@ class Canvas:
     def _set_text(self, elem, text):
         self._canvas.itemconfig(elem._elem_id, text=text)
 
-    def _vertices_to_args(self, vertices):
+    @staticmethod
+    def _vertices_to_args(vertices):
         min_x = min(v[0] for v in vertices)
         max_x = max(v[0] for v in vertices)
         min_y = min(v[1] for v in vertices)
