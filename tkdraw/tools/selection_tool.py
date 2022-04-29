@@ -2,7 +2,6 @@ from enum import Enum
 
 from .tool import Tool
 from .. import geom
-from .. import coords
 from .. import icons
 
 
@@ -44,7 +43,7 @@ class SelectionTool(Tool):
         R = geom.Rect(geom.Vec(-2, -2), geom.Vec(2, 2))
         for se in elems_set:
             for h in se.handles:
-                points_list.append(self.workspace.add_rectangle(
+                points_list.append(self.workspace.add_fine_rectangle(
                     h, R, fill='black'))
 
     def _remove_handle_points(self, points_list):
@@ -93,7 +92,7 @@ class SelectionTool(Tool):
         self.nearest_elem = nearest_elem
         R = geom.Rect(geom.Vec(-3, -3), geom.Vec(3, 3))
         for h in self.nearest_elem.handles:
-            self.nearest_points.append(self.workspace.add_rectangle(h, R))
+            self.nearest_points.append(self.workspace.add_fine_rectangle(h, R))
 
     def _remove_nearest_points(self):
         self._remove_handle_points(self.nearest_points)
@@ -125,7 +124,7 @@ class SelectionTool(Tool):
         self.state            = State.RECT_STARTED
         self.select_rect      = geom.Rect(p, p)
         self.select_rect_elem = self.workspace.add_rectangle(
-                p, geom.Rect.zero(), outline='gray')
+                self.select_rect, outline='gray')
 
     def _stop_selection_rect(self):
         assert self.state == State.RECT_STARTED
@@ -233,11 +232,8 @@ class SelectionTool(Tool):
             self.select_rect = geom.Rect(self.select_rect.p0, p)
             self.workspace.delete_canvas_elem(self.select_rect_elem)
 
-            R = geom.Rect(
-                    geom.Vec(0, 0),
-                    coords.grid_to_canvas_delta(p - self.select_rect.p0))
             self.select_rect_elem = self.workspace.add_rectangle(
-                    self.select_rect.p0, R, outline='gray')
+                    self.select_rect, outline='gray')
 
             self._remove_select_rect_points()
             self.select_rect_elems.clear()

@@ -237,7 +237,12 @@ class Workspace(TKBase):
         return self.canvas.add_line(coords.gridp_to_canvasp(p0),
                                     coords.gridp_to_canvasp(p1))
 
-    def add_rectangle(self, P, R, **kwargs):
+    def add_rectangle(self, R, **kwargs):
+        R = geom.Rect(coords.gridp_to_canvasp(R.p0),
+                      coords.gridp_to_canvasp(R.p1))
+        return self.canvas.add_rectangle(R, **kwargs)
+
+    def add_fine_rectangle(self, P, R, **kwargs):
         P = coords.gridp_to_canvasp(P)
         return self.canvas.add_rectangle(R + P, **kwargs)
 
