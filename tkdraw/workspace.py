@@ -64,8 +64,8 @@ class DrawCanvas(Canvas):
         and then draw white horizontal bands spaced to carve out horizontal
         lines from the black rectangle and then we draw white vertical bands
         spaced to cut the black lines up into individual pixels at each grid
-        point.  This is O(M + N) and performance is snappy, at least on my
-        M1 MacBook Pro.
+        point.  This is O(M + N) and performance is snappy, even on my old 2012
+        Macbook Air.
         '''
         self.content_rect.resize(GRID_PAD - 1, GRID_PAD - 1, e.width - 1,
                                  e.height - 1)
