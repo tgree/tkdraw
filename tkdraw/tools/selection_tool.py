@@ -122,8 +122,7 @@ class SelectionTool(Tool):
         assert not self.select_rect_points
 
         self.state            = State.RECT_STARTED
-        self.select_rect      = geom.Rect(geom.Vec(p.x, p.y),
-                                          geom.Vec(p.x, p.y))
+        self.select_rect      = geom.Rect(p, p)
         self.select_rect_elem = self.workspace.add_rectangle(
                 p.x, p.y, 0, 0, 0, 0, outline='gray')
 
@@ -227,12 +226,10 @@ class SelectionTool(Tool):
         if self.state == State.IDLE:
             self._add_nearest_points(p)
         elif self.state == State.DRAG_STARTED:
-            dv           = geom.Vec(p.x, p.y) - self.drag_p1
+            self._translate_elems(self.selected_elems, p - self.drag_p1)
             self.drag_p1 = p
-            self._translate_elems(self.selected_elems, dv)
         elif self.state == State.RECT_STARTED:
-            self.select_rect = geom.Rect(self.select_rect.p0,
-                                         geom.Vec(p.x, p.y))
+            self.select_rect = geom.Rect(self.select_rect.p0, p)
             self.workspace.delete_canvas_elem(self.select_rect_elem)
             self.select_rect_elem = self.workspace.add_rectangle(
                     self.select_rect.p0.x, self.select_rect.p0.y, 0, 0,
