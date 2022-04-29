@@ -94,7 +94,7 @@ class SelectionTool(Tool):
             return
 
         for e in elems:
-            e.nudge(dx, dy)
+            e.translate(dx, dy)
 
         self._update_selected_points()
         if self.nearest_elem:

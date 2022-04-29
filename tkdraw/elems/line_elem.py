@@ -30,7 +30,7 @@ class LineElem(Elem):
                 coords.grid_to_canvas_delta(self.segment.line.dt.x),
                 coords.grid_to_canvas_delta(self.segment.line.dt.y))
 
-    def nudge(self, dx, dy):
+    def translate(self, dx, dy):
         d = geom.Vec(dx, dy)
         self.move_line(self.segment.line.p0 + d, self.segment.line.p1 + d)
 
