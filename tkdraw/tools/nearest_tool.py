@@ -88,13 +88,15 @@ class NearestTool(Tool):
 
         if e.keysym in ('Left', 'Right', 'Up', 'Down'):
             if e.keysym == 'Left':
-                self.selected_elem.nudge(-1, 0)
+                dx, dy = -1, 0
             elif e.keysym == 'Right':
-                self.selected_elem.nudge(1, 0)
+                dx, dy = 1, 0
             elif e.keysym == 'Up':
-                self.selected_elem.nudge(0, -1)
+                dx, dy = 0, -1
             elif e.keysym == 'Down':
-                self.selected_elem.nudge(0, 1)
+                dx, dy = 0, 1
+
+            self.selected_elem.nudge(dx, dy)
 
             self._remove_selected_points()
             self._add_selected_points()
