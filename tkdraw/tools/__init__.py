@@ -1,9 +1,9 @@
 from .line_tool import LineTool
-from .nearest_tool import NearestTool
+from .selection_tool import SelectionTool
 from .null_tool import NullTool
 
 
 __all__ = ['LineTool',
-           'NearestTool',
            'NullTool',
+           'SelectionTool',
            ]

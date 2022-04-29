@@ -2,6 +2,7 @@ from enum import Enum
 
 from .tool import Tool
 from ..elems import LineElem
+from .. import geom
 
 
 class State(Enum):
@@ -10,12 +11,12 @@ class State(Enum):
 
 
 class LineTool(Tool):
-    def __init__(self, workspace, x, y, w, h, *args, **kwargs):
-        super().__init__(workspace, x, y, w, h, *args, **kwargs)
+    def __init__(self, workspace, R, *args, **kwargs):
+        super().__init__(workspace, R, *args, **kwargs)
         self.state     = State.IDLE
         self.line_elem = None
-        self.icon_line = workspace.tool_canvas.add_line(x + 10, y + 10,
-                                                        w - 20, h - 20)
+        self.icon_line = workspace.tool_canvas.add_line(
+                R.p0 + geom.Vec(10, 10), R.p1 - geom.Vec(10, 10))
 
     def _go_idle(self):
         if self.state == State.DRAG_STARTED:
@@ -50,25 +51,20 @@ class LineTool(Tool):
 
     def handle_mouse_down(self, p):
         assert self.state == State.IDLE
-        tk_elem        = self.workspace.add_line(p.x, p.y, 0, 0)
-        self.line_elem = LineElem(tk_elem, p.x, p.y, 0, 0)
+        tk_elem        = self.workspace.add_line(p, p)
+        self.line_elem = LineElem(tk_elem, p, p)
         self.state     = State.DRAG_STARTED
 
     def handle_mouse_up(self, p):
         if self.state == State.DRAG_STARTED:
-            if self.line_elem.handles[0] == self.line_elem.handles[1]:
+            if self.line_elem.segment.line.dt2 == 0:
                 self._go_idle()
                 return
 
-            self.workspace.add_elem(self.line_elem)
+            self.workspace.doc.add_elem(self.line_elem)
             self.line_elem = None
             self.state     = State.IDLE
 
     def handle_mouse_moved(self, p):
         if self.state == State.DRAG_STARTED:
-            self.line_elem.handles[1] = (p.x, p.y)
-            self.workspace.move_line(self.line_elem.tk_elem,
-                                     self.line_elem.handles[0][0],
-                                     self.line_elem.handles[0][1],
-                                     p.x - self.line_elem.handles[0][0],
-                                     p.y - self.line_elem.handles[0][1])
+            self.line_elem.move_line(self.line_elem.segment.line.p0, p)

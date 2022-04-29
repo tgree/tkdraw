@@ -19,7 +19,7 @@ clean:
 	find . -name __pycache__ | xargs rm -r
 
 .PHONY: test
-test: flake8 lint
+test: flake8 lint unittest
 
 .PHONY: flake8
 flake8:
@@ -28,6 +28,10 @@ flake8:
 .PHONY: lint
 lint:
 	pylint $(LINT_MODULES)
+
+.PHONY: unittest
+unittest:
+	python3 -m unittest
 
 .PHONY: $(MODULE)
 $(MODULE): dist/$(MODULE)-$(MODULE_VERS)-py3-none-any.whl

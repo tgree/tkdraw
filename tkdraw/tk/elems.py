@@ -60,14 +60,14 @@ class CanvasElem(Elem):
         else:
             self.coords(x, y)
 
-    def resize(self, x, y, width, height):
+    def resize(self, R):
         assert self.width is not None
         assert self.height is not None
-        self.x      = x
-        self.y      = y
-        self.width  = width
-        self.height = height
-        self.coords(x, y, x + width, y + height)
+        self.x      = R.p0.x
+        self.y      = R.p0.y
+        self.width  = R.width
+        self.height = R.height
+        self.coords(R.p0.x, R.p0.y, R.p1.x, R.p1.y)
 
     def coords(self, *args):
         self._canvas._coords(self, *args)
@@ -121,7 +121,8 @@ class Canvas:
     def _set_text(self, elem, text):
         self._canvas.itemconfig(elem._elem_id, text=text)
 
-    def add_lines(self, vertices, **kwargs):
+    @staticmethod
+    def _vertices_to_args(vertices):
         min_x = min(v[0] for v in vertices)
         max_x = max(v[0] for v in vertices)
         min_y = min(v[1] for v in vertices)
@@ -132,16 +133,26 @@ class Canvas:
         for v in vertices:
             args.append(v[0])
             args.append(v[1])
+        return args, min_x, min_y, w, h
+
+    def add_lines(self, vertices, **kwargs):
+        args, min_x, min_y, w, h = self._vertices_to_args(vertices)
         elem_id = self._canvas.create_line(*args, **kwargs)
         return LineElem(self, elem_id, min_x, min_y, w, h)
 
-    def add_line(self, x, y, dx, dy, **kwargs):
-        return self.add_lines([(x, y), (x + dx, y + dy)], **kwargs)
+    def add_line(self, p0, p1, **kwargs):
+        return self.add_lines([(p0.x, p0.y), (p1.x, p1.y)], **kwargs)
 
-    def add_rectangle(self, x, y, width, height, **kwargs):
+    def add_rectangle(self, R, **kwargs):
         elem_id = self._canvas.create_rectangle(
-                (x, y, x + width, y + height), **kwargs)
-        return CanvasElem(self, elem_id, x, y, width=width, height=height)
+                (R.p0.x, R.p0.y, R.p1.x, R.p1.y), **kwargs)
+        return CanvasElem(self, elem_id, R.p0.x, R.p0.y, width=R.width,
+                          height=R.height)
+
+    def add_poly(self, vertices, **kwargs):
+        args, min_x, min_y, w, h = self._vertices_to_args(vertices)
+        elem_id = self._canvas.create_polygon(*args, **kwargs)
+        return CanvasElem(self, elem_id, min_x, min_y, w, h)
 
     def add_oval(self, x, y, width, height, **kwargs):
         elem_id = self._canvas.create_oval(
