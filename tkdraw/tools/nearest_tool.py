@@ -86,22 +86,23 @@ class NearestTool(Tool):
         if not self.selected_elem:
             return
 
-        if e.keysym == 'Left':
-            self.selected_elem.nudge(-1, 0)
-        elif e.keysym == 'Right':
-            self.selected_elem.nudge(1, 0)
-        elif e.keysym == 'Up':
-            self.selected_elem.nudge(0, -1)
-        elif e.keysym == 'Down':
-            self.selected_elem.nudge(0, 1)
+        if e.keysym in ('Left', 'Right', 'Up', 'Down'):
+            if e.keysym == 'Left':
+                self.selected_elem.nudge(-1, 0)
+            elif e.keysym == 'Right':
+                self.selected_elem.nudge(1, 0)
+            elif e.keysym == 'Up':
+                self.selected_elem.nudge(0, -1)
+            elif e.keysym == 'Down':
+                self.selected_elem.nudge(0, 1)
 
-        self._remove_selected_points()
-        self._add_selected_points()
-        if self.nearest_elem:
-            self._remove_nearest_points()
-            self.nearest_elem = None
-        if self.last_mouse_point:
-            self._add_nearest_points(self.last_mouse_point)
+            self._remove_selected_points()
+            self._add_selected_points()
+            if self.nearest_elem:
+                self._remove_nearest_points()
+                self.nearest_elem = None
+            if self.last_mouse_point:
+                self._add_nearest_points(self.last_mouse_point)
 
     def handle_mouse_down(self, p):
         for p in self.selected_points:
