@@ -68,8 +68,8 @@ class DrawCanvas(Canvas):
         point.  This is O(M + N) and performance is snappy, even on my old 2012
         Macbook Air.
         '''
-        self.content_rect.resize(geom.Rect(geom.Vec(0, 0),
-                                           geom.Vec(e.width - 1, e.height - 1)))
+        self.content_rect.resize(geom.Rect.from_vec(
+            geom.Vec(e.width - 1, e.height - 1)))
         self.width_points, self.height_points = coords.canvas_to_grid_floor(
             e.width - 1, e.height - 1)
 

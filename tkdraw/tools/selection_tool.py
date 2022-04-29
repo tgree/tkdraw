@@ -40,7 +40,7 @@ class SelectionTool(Tool):
                                        fill='black')
 
     def _add_handle_points(self, elems_set, points_list):
-        R = geom.Rect(geom.Vec(-2, -2), geom.Vec(2, 2))
+        R = geom.Rect.square(4)
         for se in elems_set:
             for h in se.handles:
                 points_list.append(self.workspace.add_fine_rectangle(
@@ -90,7 +90,7 @@ class SelectionTool(Tool):
 
         self._remove_nearest_points()
         self.nearest_elem = nearest_elem
-        R = geom.Rect(geom.Vec(-3, -3), geom.Vec(3, 3))
+        R = geom.Rect.square(6)
         for h in self.nearest_elem.handles:
             self.nearest_points.append(self.workspace.add_fine_rectangle(h, R))
 
