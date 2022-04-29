@@ -26,6 +26,13 @@ class LineElem(Elem):
                                coords.grid_to_canvas_delta(w),
                                coords.grid_to_canvas_delta(h))
 
+    def nudge(self, dx, dy):
+        x = self.handles[0][0] + dx
+        y = self.handles[0][1] + dy
+        w = self.handles[1][0] - self.handles[0][0]
+        h = self.handles[1][1] - self.handles[0][1]
+        self.move_line(x, y, w, h)
+
     def nearest_point(self, x, y):
         '''
         Returns the nearest point on the line segment to the point P = (x, y).
