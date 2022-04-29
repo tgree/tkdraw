@@ -1,29 +1,8 @@
-import math
 
 from .tool import Tool
+from .. import icons
 
 
-L   = 22
-w   = 2.25
-D   = 1.63
-
-l   = L / math.sqrt(2)
-r   = w / math.sin(3 * math.pi / 8)
-R   = 2*l - L - r
-Qdx = w * math.cos(math.pi / 8)
-Qdy = w * math.sin(math.pi / 8)
-
-ARROW_VERTICES = [
-    (0,                0),
-    (0,                L),
-    (R / math.sqrt(2), L - R / math.sqrt(2)),
-    (D*(L-l) - Qdx,    D*l + Qdy),
-    (D*(L-l) + Qdx,    D*l - Qdy),
-    (l - R,            l),
-    (l,                l),
-]
-ARROW_WIDTH  = max(v[0] for v in ARROW_VERTICES)
-ARROW_HEIGHT = max(v[1] for v in ARROW_VERTICES)
 
 
 class SelectionTool(Tool):
@@ -35,11 +14,8 @@ class SelectionTool(Tool):
         self.selected_points  = []
         self.last_mouse_point = None
 
-        x0 = x + (w - ARROW_WIDTH) // 2
-        y0 = y + (h - ARROW_HEIGHT) // 2
-        workspace.tool_canvas.add_poly(
-                [(x0 + vx, y0 + vy) for (vx, vy) in ARROW_VERTICES],
-                fill='black')
+        workspace.tool_canvas.add_poly(icons.arrow.get_vertices(x, y, w, h),
+                                       fill='black')
 
     def _add_selected_points(self):
         for se in self.selected_elems:
