@@ -147,6 +147,11 @@ class Canvas:
                 (x, y, x + width, y + height), **kwargs)
         return CanvasElem(self, elem_id, x, y, width=width, height=height)
 
+    def add_poly(self, vertices, **kwargs):
+        args, min_x, min_y, w, h = self._vertices_to_args(vertices)
+        elem_id = self._canvas.create_polygon(*args, **kwargs)
+        return CanvasElem(self, elem_id, min_x, min_y, w, h)
+
     def add_oval(self, x, y, width, height, **kwargs):
         elem_id = self._canvas.create_oval(
                 (x, y, x + width, y + height), **kwargs)
