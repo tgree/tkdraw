@@ -63,24 +63,25 @@ class SelectionTool(Tool):
         if not self.workspace.doc.elems:
             return
 
-        nearest = None
+        nearest_elem = None
+        nearest_nn   = None
         for e in self.workspace.doc.elems:
             v  = geom.Vec(p.ex, p.ey)
             dv = e.nearest_point(v) - v
             nn = dv.norm_squared()
-            if not nearest or nn < nearest[0]:  # pylint: disable=E1136
-                nearest = (nn, e)
+            if not nearest_elem or nn < nearest_nn:
+                nearest_elem, nearest_nn = e, nn
 
-        if nearest[0] >= 4:
+        if nearest_nn >= 4:
             self._remove_nearest_points()
             self.nearest_elem = None
             return
 
-        if nearest[1] == self.nearest_elem:
+        if nearest_elem == self.nearest_elem:
             return
 
         self._remove_nearest_points()
-        self.nearest_elem = nearest[1]
+        self.nearest_elem = nearest_elem
         for h in self.nearest_elem.handles:
             self.nearest_points.append(self.workspace.add_rectangle(
                 h.x, h.y, -3, -3, 6, 6))
