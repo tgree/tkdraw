@@ -1,7 +1,7 @@
 from .tool import Tool
 
 
-class NearestTool(Tool):
+class SelectionTool(Tool):
     def __init__(self, workspace, x, y, w, h, *args, **kwargs):
         super().__init__(workspace, x, y, w, h, *args, **kwargs)
         self.nearest_elem     = None
