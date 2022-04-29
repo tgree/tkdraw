@@ -3,8 +3,12 @@ Utility methods for dealing with the grid in the canvas.  The canvas has fixed
 padding around the four edges and the workspace ensures that when resizing the
 window it can only go in multiples of the grid size.
 '''
+from . import geom
+
+
 GRID_SPACING = 10
 GRID_PAD     = (GRID_SPACING // 2)
+GRID_PAD_DV  = geom.Vec(GRID_PAD, GRID_PAD)
 
 
 def canvasx_floor(x):
@@ -108,6 +112,13 @@ def gridy_to_canvasy(y):
     Given a Y point in grid coordinates, convert it to a canvas mouse point.
     '''
     return y * GRID_SPACING + GRID_PAD
+
+
+def gridp_to_canvasp(p):
+    '''
+    Given a geom.Vec in grid coordinates, convert it to a canvas mouse point.
+    '''
+    return p * GRID_SPACING + GRID_PAD_DV
 
 
 def grid_to_canvas(x, y):
