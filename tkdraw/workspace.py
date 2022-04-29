@@ -1,5 +1,6 @@
 from .tk.elems import TKBase, Canvas
 from . import tools
+from . import coords
 
 
 WINDOW_X      = 10
@@ -9,9 +10,6 @@ TITLE_HEIGHT  = 28
 TOOL_DIM     = 50
 TOOLS_WIDTH  = 2 * TOOL_DIM
 TOOLS_HEIGHT = 400
-
-GRID_SPACING = 10
-GRID_PAD     = (GRID_SPACING // 2)
 
 
 def clamp(l, v, r):
@@ -67,29 +65,25 @@ class DrawCanvas(Canvas):
         point.  This is O(M + N) and performance is snappy, even on my old 2012
         Macbook Air.
         '''
-        self.content_rect.resize(GRID_PAD - 1, GRID_PAD - 1, e.width - 1,
-                                 e.height - 1)
-        self.width_points  = (e.width - GRID_PAD - 1) // GRID_SPACING
-        self.height_points = (e.height - GRID_PAD - 1) // GRID_SPACING
+        self.content_rect.resize(0, 0, e.width - 1, e.height - 1)
+        self.width_points, self.height_points = coords.canvas_to_grid_floor(
+            e.width - 1, e.height - 1)
 
-        self.h_pad.resize(0, 0, e.width, GRID_PAD)
-        for y, r in enumerate(self.h_rects):
-            r.resize(0, y * GRID_SPACING + GRID_PAD + 1, e.width,
-                     GRID_SPACING - 1)
-        for y in range(len(self.h_rects), e.height // GRID_SPACING + 1):
-            r = self.add_rectangle(0, y * GRID_SPACING + GRID_PAD + 1, e.width,
-                                   GRID_SPACING - 1, fill='white', outline='')
-            self.h_rects.append(r)
+        h_bands = coords.get_canvas_h_bands(e.width, e.height)
+        for i, (x, y, w, h) in enumerate(h_bands):
+            if i < len(self.h_rects):
+                self.h_rects[i].resize(x, y, w, h)
+            else:
+                r = self.add_rectangle(x, y, w, h, fill='white', outline='')
+                self.h_rects.append(r)
 
-        self.v_pad.resize(0, 0, GRID_PAD, e.height)
-        for x, r in enumerate(self.v_rects):
-            r.resize(x * GRID_SPACING + GRID_PAD + 1, 0, GRID_SPACING - 1,
-                     e.height)
-        for x in range(len(self.v_rects), e.width // GRID_SPACING + 1):
-            r = self.add_rectangle(x * GRID_SPACING + GRID_PAD + 1, 0,
-                                   GRID_SPACING - 1, e.height, fill='white',
-                                   outline='')
-            self.v_rects.append(r)
+        v_bands = coords.get_canvas_v_bands(e.width, e.height)
+        for i, (x, y, w, h) in enumerate(v_bands):
+            if i < len(self.v_rects):
+                self.v_rects[i].resize(x, y, w, h)
+            else:
+                r = self.add_rectangle(x, y, w, h, fill='white', outline='')
+                self.v_rects.append(r)
 
     def hide_grid(self):
         self.content_rect.set_fill('white')
@@ -118,11 +112,9 @@ class Workspace(TKBase):
     def __init__(self):
         super().__init__()
 
-        w  = (self._root.winfo_screenwidth() - 2*WINDOW_X)
-        w -= (w % GRID_SPACING)
-        h  = (self._root.winfo_screenheight() - TITLE_HEIGHT - WINDOW_Y -
-              WINDOW_X)
-        h -= (h % GRID_SPACING)
+        w = coords.canvasx_floor(self._root.winfo_screenwidth() - 2*WINDOW_X)
+        h = coords.canvasy_floor(self._root.winfo_screenheight() -
+                                 TITLE_HEIGHT - WINDOW_Y - WINDOW_X)
 
         self.set_geometry(WINDOW_X, WINDOW_Y, w, h)
         self.tool_canvas = self.add_canvas(TOOLS_WIDTH, TOOLS_HEIGHT, 0, 0,
@@ -172,11 +164,13 @@ class Workspace(TKBase):
         if e.widget != self.canvas._canvas:
             return
 
-        ex = clamp(0, (x - GRID_PAD) / GRID_SPACING, self.canvas.width_points)
-        ey = clamp(0, (y - GRID_PAD) / GRID_SPACING, self.canvas.height_points)
-        x  = clamp(0, round((x - GRID_PAD) / GRID_SPACING),
+        ex = clamp(0, coords.canvasx_to_gridx_float(x),
                    self.canvas.width_points)
-        y  = clamp(0, round((y - GRID_PAD) / GRID_SPACING),
+        ey = clamp(0, coords.canvasy_to_gridy_float(y),
+                   self.canvas.height_points)
+        x  = clamp(0, coords.canvasx_to_gridx_round(x),
+                   self.canvas.width_points)
+        y  = clamp(0, coords.canvasy_to_gridy_round(y),
                    self.canvas.height_points)
         handler(MousePoint(x, y, ex, ey))
 
@@ -217,8 +211,8 @@ class Workspace(TKBase):
         if e.height == 1:
             return
 
-        h = (e.height - (e.height % GRID_SPACING))
-        w = (e.width - (e.width % GRID_SPACING))
+        h = coords.canvasy_floor(e.height)
+        w = coords.canvasx_floor(e.width)
         if e.height != h or e.width != w:
             x, y, _, _ = self.get_geometry()
             self.set_geometry(x, y, w, h)
@@ -237,19 +231,23 @@ class Workspace(TKBase):
         self.elems.append(elem)
 
     def add_line(self, x, y, dx, dy):
-        return self.canvas.add_line(x * GRID_SPACING + GRID_PAD,
-                                    y * GRID_SPACING + GRID_PAD,
-                                    dx * GRID_SPACING, dy * GRID_SPACING)
+        return self.canvas.add_line(coords.gridx_to_canvasx(x),
+                                    coords.gridy_to_canvasy(y),
+                                    coords.grid_to_canvas_delta(dx),
+                                    coords.grid_to_canvas_delta(dy))
 
     def add_rectangle(self, x, y, fine_dx, fine_dy, w, h, **kwargs):
-        return self.canvas.add_rectangle(x * GRID_SPACING + GRID_PAD + fine_dx,
-                                         y * GRID_SPACING + GRID_PAD + fine_dy,
-                                         w, h, **kwargs)
+        return self.canvas.add_rectangle(
+                coords.gridx_to_canvasx(x) + fine_dx,
+                coords.gridy_to_canvasy(y) + fine_dy,
+                w, h, **kwargs)
 
     def delete_canvas_elem(self, l):
         self.canvas.delete_elem(l)
 
     @staticmethod
     def move_line(l, x, y, dx, dy):
-        l.move_line(x * GRID_SPACING + GRID_PAD, y * GRID_SPACING + GRID_PAD,
-                    dx * GRID_SPACING, dy * GRID_SPACING)
+        l.move_line(coords.gridx_to_canvasx(x),
+                    coords.gridy_to_canvasy(y),
+                    coords.grid_to_canvas_delta(dx),
+                    coords.grid_to_canvas_delta(dy))
