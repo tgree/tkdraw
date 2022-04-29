@@ -1,6 +1,7 @@
 import numpy as np
 
 from .elem import Elem
+from .. import coords
 
 
 class LineElem(Elem):
@@ -16,6 +17,14 @@ class LineElem(Elem):
                 self.handles[0][0], self.handles[0][1],
                 self.handles[1][0] - self.handles[0][0],
                 self.handles[1][1] - self.handles[0][1])
+
+    def move_line(self, x, y, w, h):
+        self.handles[0] = (x, y)
+        self.handles[1] = (x + w, y + h)
+        self.tk_elem.move_line(coords.gridx_to_canvasx(x),
+                               coords.gridy_to_canvasy(y),
+                               coords.grid_to_canvas_delta(w),
+                               coords.grid_to_canvas_delta(h))
 
     def nearest_point(self, x, y):
         '''

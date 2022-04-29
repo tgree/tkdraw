@@ -244,10 +244,3 @@ class Workspace(TKBase):
 
     def delete_canvas_elem(self, l):
         self.canvas.delete_elem(l)
-
-    @staticmethod
-    def move_line(l, x, y, dx, dy):
-        l.move_line(coords.gridx_to_canvasx(x),
-                    coords.gridy_to_canvasy(y),
-                    coords.grid_to_canvas_delta(dx),
-                    coords.grid_to_canvas_delta(dy))

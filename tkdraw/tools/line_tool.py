@@ -66,9 +66,7 @@ class LineTool(Tool):
 
     def handle_mouse_moved(self, p):
         if self.state == State.DRAG_STARTED:
-            self.line_elem.handles[1] = (p.x, p.y)
-            self.workspace.move_line(self.line_elem.tk_elem,
-                                     self.line_elem.handles[0][0],
+            self.line_elem.move_line(self.line_elem.handles[0][0],
                                      self.line_elem.handles[0][1],
                                      p.x - self.line_elem.handles[0][0],
                                      p.y - self.line_elem.handles[0][1])
