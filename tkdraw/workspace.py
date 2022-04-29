@@ -29,8 +29,9 @@ class MousePoint(geom.Vec):
 class ToolCanvas(Canvas):
     def __init__(self, workspace, canvas, width, height):
         super().__init__(workspace, canvas, width, height)
-        self.border_line = self.add_line(TOOLS_WIDTH - 1, 1,
-                                         0, TOOLS_HEIGHT - 2)
+        self.border_line = self.add_line(
+                geom.Vec(TOOLS_WIDTH - 1, 1),
+                geom.Vec(TOOLS_WIDTH - 1, TOOLS_HEIGHT - 1))
         self.register_handler('<Configure>', self.handle_config_change)
 
     def handle_config_change(self, e):
@@ -229,11 +230,9 @@ class Workspace(TKBase):
             return
         self.selected_tool.handle_app_deactivated()
 
-    def add_line(self, x, y, dx, dy):
-        return self.canvas.add_line(coords.gridx_to_canvasx(x),
-                                    coords.gridy_to_canvasy(y),
-                                    coords.grid_to_canvas_delta(dx),
-                                    coords.grid_to_canvas_delta(dy))
+    def add_line(self, p0, p1):
+        return self.canvas.add_line(coords.gridp_to_canvasp(p0),
+                                    coords.gridp_to_canvasp(p1))
 
     def add_rectangle(self, x, y, fine_dx, fine_dy, w, h, **kwargs):
         return self.canvas.add_rectangle(

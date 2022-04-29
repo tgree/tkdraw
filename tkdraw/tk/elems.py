@@ -140,8 +140,8 @@ class Canvas:
         elem_id = self._canvas.create_line(*args, **kwargs)
         return LineElem(self, elem_id, min_x, min_y, w, h)
 
-    def add_line(self, x, y, dx, dy, **kwargs):
-        return self.add_lines([(x, y), (x + dx, y + dy)], **kwargs)
+    def add_line(self, p0, p1, **kwargs):
+        return self.add_lines([(p0.x, p0.y), (p1.x, p1.y)], **kwargs)
 
     def add_rectangle(self, x, y, width, height, **kwargs):
         elem_id = self._canvas.create_rectangle(
