@@ -60,14 +60,14 @@ class CanvasElem(Elem):
         else:
             self.coords(x, y)
 
-    def resize(self, x, y, width, height):
+    def resize(self, R):
         assert self.width is not None
         assert self.height is not None
-        self.x      = x
-        self.y      = y
-        self.width  = width
-        self.height = height
-        self.coords(x, y, x + width, y + height)
+        self.x      = R.p0.x
+        self.y      = R.p0.y
+        self.width  = R.width
+        self.height = R.height
+        self.coords(R.p0.x, R.p0.y, R.p1.x, R.p1.y)
 
     def coords(self, *args):
         self._canvas._coords(self, *args)
@@ -143,10 +143,11 @@ class Canvas:
     def add_line(self, p0, p1, **kwargs):
         return self.add_lines([(p0.x, p0.y), (p1.x, p1.y)], **kwargs)
 
-    def add_rectangle(self, x, y, width, height, **kwargs):
+    def add_rectangle(self, R, **kwargs):
         elem_id = self._canvas.create_rectangle(
-                (x, y, x + width, y + height), **kwargs)
-        return CanvasElem(self, elem_id, x, y, width=width, height=height)
+                (R.p0.x, R.p0.y, R.p1.x, R.p1.y), **kwargs)
+        return CanvasElem(self, elem_id, R.p0.x, R.p0.y, width=R.width,
+                          height=R.height)
 
     def add_poly(self, vertices, **kwargs):
         args, min_x, min_y, w, h = self._vertices_to_args(vertices)

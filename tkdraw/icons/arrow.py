@@ -24,7 +24,7 @@ ARROW_WIDTH  = max(v[0] for v in ARROW_VERTICES)
 ARROW_HEIGHT = max(v[1] for v in ARROW_VERTICES)
 
 
-def get_vertices(x0, y0, w, h):
-    x = x0 + (w - ARROW_WIDTH) // 2
-    y = y0 + (h - ARROW_HEIGHT) // 2
+def get_vertices(_R):
+    x = _R.p0.x + (_R.width - ARROW_WIDTH) // 2
+    y = _R.p0.y + (_R.height - ARROW_HEIGHT) // 2
     return [(x + vx, y + vy) for (vx, vy) in ARROW_VERTICES]

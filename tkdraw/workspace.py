@@ -45,13 +45,13 @@ class DrawCanvas(Canvas):
         self.v_rects       = []
         self.width_points  = None
         self.height_points = None
-        self.content_rect  = self.add_rectangle(0, 0, 0, 0, outline='',
-                                                fill='black')
-        self.h_pad         = self.add_rectangle(0, 0, 0, 0, fill='white',
-                                                outline='')
-        self.v_pad         = self.add_rectangle(0, 0, 0, 0, fill='white',
-                                                outline='')
         self.grid_shown    = True
+
+        z_rect            = geom.Rect.zero()
+        self.content_rect = self.add_rectangle(z_rect, outline='', fill='black')
+        self.h_pad        = self.add_rectangle(z_rect, fill='white', outline='')
+        self.v_pad        = self.add_rectangle(z_rect, fill='white', outline='')
+
         self.register_handler('<Configure>', self._handle_config_change)
 
     def _handle_config_change(self, e):
@@ -68,24 +68,25 @@ class DrawCanvas(Canvas):
         point.  This is O(M + N) and performance is snappy, even on my old 2012
         Macbook Air.
         '''
-        self.content_rect.resize(0, 0, e.width - 1, e.height - 1)
+        self.content_rect.resize(geom.Rect(geom.Vec(0, 0),
+                                           geom.Vec(e.width - 1, e.height - 1)))
         self.width_points, self.height_points = coords.canvas_to_grid_floor(
             e.width - 1, e.height - 1)
 
         h_bands = coords.get_canvas_h_bands(e.width, e.height)
-        for i, (x, y, w, h) in enumerate(h_bands):
+        for i, R in enumerate(h_bands):
             if i < len(self.h_rects):
-                self.h_rects[i].resize(x, y, w, h)
+                self.h_rects[i].resize(R)
             else:
-                r = self.add_rectangle(x, y, w, h, fill='white', outline='')
+                r = self.add_rectangle(R, fill='white', outline='')
                 self.h_rects.append(r)
 
         v_bands = coords.get_canvas_v_bands(e.width, e.height)
-        for i, (x, y, w, h) in enumerate(v_bands):
+        for i, R in enumerate(v_bands):
             if i < len(self.v_rects):
-                self.v_rects[i].resize(x, y, w, h)
+                self.v_rects[i].resize(R)
             else:
-                r = self.add_rectangle(x, y, w, h, fill='white', outline='')
+                r = self.add_rectangle(R, fill='white', outline='')
                 self.v_rects.append(r)
 
     def hide_grid(self):
@@ -151,7 +152,9 @@ class Workspace(TKBase):
         for i, tcls in enumerate(tool_classes):
             x = (i % 2) * TOOL_DIM
             y = (i // 2) * TOOL_DIM
-            t = tcls(self, x, y, TOOL_DIM - 2, TOOL_DIM - 2)
+            R = geom.Rect(geom.Vec(x, y),
+                          geom.Vec(x + TOOL_DIM - 2, y + TOOL_DIM - 2))
+            t = tcls(self, R)
             self.tools.append(t)
 
         self.select_tool(self.tools[0])
@@ -234,11 +237,9 @@ class Workspace(TKBase):
         return self.canvas.add_line(coords.gridp_to_canvasp(p0),
                                     coords.gridp_to_canvasp(p1))
 
-    def add_rectangle(self, x, y, fine_dx, fine_dy, w, h, **kwargs):
-        return self.canvas.add_rectangle(
-                coords.gridx_to_canvasx(x) + fine_dx,
-                coords.gridy_to_canvasy(y) + fine_dy,
-                w, h, **kwargs)
+    def add_rectangle(self, P, R, **kwargs):
+        P = coords.gridp_to_canvasp(P)
+        return self.canvas.add_rectangle(R + P, **kwargs)
 
     def delete_canvas_elem(self, l):
         self.canvas.delete_elem(l)

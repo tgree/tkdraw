@@ -21,8 +21,8 @@ class State(Enum):
 
 
 class SelectionTool(Tool):
-    def __init__(self, workspace, x, y, w, h, *args, **kwargs):
-        super().__init__(workspace, x, y, w, h, *args, **kwargs)
+    def __init__(self, workspace, R, *args, **kwargs):
+        super().__init__(workspace, R, *args, **kwargs)
         self.state            = State.IDLE
         self.nearest_elem     = None
         self.nearest_points   = []
@@ -37,14 +37,15 @@ class SelectionTool(Tool):
         self.select_rect_elems  = set()
         self.select_rect_points = []
 
-        workspace.tool_canvas.add_poly(icons.arrow.get_vertices(x, y, w, h),
+        workspace.tool_canvas.add_poly(icons.arrow.get_vertices(R),
                                        fill='black')
 
     def _add_handle_points(self, elems_set, points_list):
+        R = geom.Rect(geom.Vec(-2, -2), geom.Vec(2, 2))
         for se in elems_set:
             for h in se.handles:
                 points_list.append(self.workspace.add_rectangle(
-                    h.x, h.y, -2, -2, 4, 4, fill='black'))
+                    h, R, fill='black'))
 
     def _remove_handle_points(self, points_list):
         for p in points_list:
@@ -90,9 +91,9 @@ class SelectionTool(Tool):
 
         self._remove_nearest_points()
         self.nearest_elem = nearest_elem
+        R = geom.Rect(geom.Vec(-3, -3), geom.Vec(3, 3))
         for h in self.nearest_elem.handles:
-            self.nearest_points.append(self.workspace.add_rectangle(
-                h.x, h.y, -3, -3, 6, 6))
+            self.nearest_points.append(self.workspace.add_rectangle(h, R))
 
     def _remove_nearest_points(self):
         self._remove_handle_points(self.nearest_points)
@@ -124,7 +125,7 @@ class SelectionTool(Tool):
         self.state            = State.RECT_STARTED
         self.select_rect      = geom.Rect(p, p)
         self.select_rect_elem = self.workspace.add_rectangle(
-                p.x, p.y, 0, 0, 0, 0, outline='gray')
+                p, geom.Rect.zero(), outline='gray')
 
     def _stop_selection_rect(self):
         assert self.state == State.RECT_STARTED
@@ -231,11 +232,12 @@ class SelectionTool(Tool):
         elif self.state == State.RECT_STARTED:
             self.select_rect = geom.Rect(self.select_rect.p0, p)
             self.workspace.delete_canvas_elem(self.select_rect_elem)
+
+            R = geom.Rect(
+                    geom.Vec(0, 0),
+                    coords.grid_to_canvas_delta(p - self.select_rect.p0))
             self.select_rect_elem = self.workspace.add_rectangle(
-                    self.select_rect.p0.x, self.select_rect.p0.y, 0, 0,
-                    coords.grid_to_canvas_delta(p.x - self.select_rect.p0.x),
-                    coords.grid_to_canvas_delta(p.y - self.select_rect.p0.y),
-                    outline='gray')
+                    self.select_rect.p0, R, outline='gray')
 
             self._remove_select_rect_points()
             self.select_rect_elems.clear()

@@ -11,12 +11,12 @@ class State(Enum):
 
 
 class LineTool(Tool):
-    def __init__(self, workspace, x, y, w, h, *args, **kwargs):
-        super().__init__(workspace, x, y, w, h, *args, **kwargs)
+    def __init__(self, workspace, R, *args, **kwargs):
+        super().__init__(workspace, R, *args, **kwargs)
         self.state     = State.IDLE
         self.line_elem = None
         self.icon_line = workspace.tool_canvas.add_line(
-                geom.Vec(x + 10, y + 10), geom.Vec(x + w - 10, y + h - 10))
+                R.p0 + geom.Vec(10, 10), R.p1 - geom.Vec(10, 10))
 
     def _go_idle(self):
         if self.state == State.DRAG_STARTED:

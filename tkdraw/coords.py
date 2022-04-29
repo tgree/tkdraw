@@ -144,9 +144,11 @@ def get_canvas_h_bands(w, h):
     (x, y, w, h) in canvas coordinates that should be used to subdivide the
     black fill into horizontal bands, including the pad rectangle at the top.
     '''
-    rs = [(0, 0, w, GRID_PAD)]
+    rs = [geom.Rect(geom.Vec(0, 0), geom.Vec(w, GRID_PAD))]
     for y in range(h // GRID_SPACING + 1):
-        rs.append((0, gridy_to_canvasy(y) + 1, w, GRID_SPACING - 1))
+        p0 = geom.Vec(0, gridy_to_canvasy(y) + 1)
+        p1 = geom.Vec(w, p0.y + GRID_SPACING - 1)
+        rs.append(geom.Rect(p0, p1))
     return rs
 
 
@@ -156,7 +158,9 @@ def get_canvas_v_bands(w, h):
     (x, y, w, h) in canvas coordinates that should be used to subdivide the
     black fill into vertical bands, including the pad rectangle on the left.
     '''
-    rs = [(0, 0, GRID_PAD, h)]
+    rs = [geom.Rect(geom.Vec(0, 0), geom.Vec(GRID_PAD, h))]
     for x in range(w // GRID_SPACING + 1):
-        rs.append((gridx_to_canvasx(x) + 1, 0, GRID_SPACING - 1, h))
+        p0 = geom.Vec(gridx_to_canvasx(x) + 1, 0)
+        p1 = geom.Vec(p0.x + GRID_SPACING - 1, h)
+        rs.append(geom.Rect(p0, p1))
     return rs
