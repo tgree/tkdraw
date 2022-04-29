@@ -6,16 +6,17 @@ class NearestTool(Tool):
         super().__init__(workspace, x, y, w, h, *args, **kwargs)
         self.nearest_elem     = None
         self.nearest_points   = []
-        self.selected_elem    = None
+        self.selected_elems   = set()
         self.selected_points  = []
         self.last_mouse_point = None
         self.icon_rect = workspace.tool_canvas.add_rectangle(
                 x + 20, y + 20, 10, 10, fill='black')
 
     def _add_selected_points(self):
-        for h in self.selected_elem.handles:
-            self.selected_points.append(self.workspace.add_rectangle(
-                h[0], h[1], -2, -2, 4, 4, fill='black'))
+        for se in self.selected_elems:
+            for h in se.handles:
+                self.selected_points.append(self.workspace.add_rectangle(
+                    h[0], h[1], -2, -2, 4, 4, fill='black'))
 
     def _remove_selected_points(self):
         for p in self.selected_points:
@@ -57,7 +58,7 @@ class NearestTool(Tool):
         self.nearest_elem  = None
 
         self._remove_selected_points()
-        self.selected_elem = None
+        self.selected_elems.clear()
 
         self.last_mouse_point = None
 
@@ -83,7 +84,7 @@ class NearestTool(Tool):
         self.last_mouse_point = None
 
     def handle_key_pressed(self, e):
-        if not self.selected_elem:
+        if not self.selected_elems:
             return
 
         if e.keysym in ('Left', 'Right', 'Up', 'Down'):
@@ -96,7 +97,8 @@ class NearestTool(Tool):
             elif e.keysym == 'Down':
                 dx, dy = 0, 1
 
-            self.selected_elem.nudge(dx, dy)
+            for se in self.selected_elems:
+                se.nudge(dx, dy)
 
             self._remove_selected_points()
             self._add_selected_points()
@@ -107,13 +109,25 @@ class NearestTool(Tool):
                 self._add_nearest_points(self.last_mouse_point)
 
     def handle_mouse_down(self, p):
-        for p in self.selected_points:
-            self.workspace.delete_canvas_elem(p)
-        self.selected_points = []
+        shift_click = (p.modifiers & 1)
+        if shift_click:
+            if not self.nearest_elem:
+                return
+            elif self.nearest_elem in self.selected_elems:
+                self.selected_elems.discard(self.nearest_elem)
+            else:
+                self.selected_elems.add(self.nearest_elem)
+        else:
+            if not self.nearest_elem:
+                self.selected_elems.clear()
+            elif self.nearest_elem not in self.selected_elems:
+                self.selected_elems.clear()
+                self.selected_elems.add(self.nearest_elem)
+            else:
+                return
 
-        self.selected_elem = self.nearest_elem
-        if self.selected_elem:
-            self._add_selected_points()
+        self._remove_selected_points()
+        self._add_selected_points()
 
     def handle_mouse_up(self, p):
         pass
