@@ -33,6 +33,13 @@ class LineElem(Elem):
     def translate(self, dv):
         self.move_line(self.segment.line.p0 + dv, self.segment.line.p1 + dv)
 
+    def drag_handle(self, index, mp):
+        '''
+        Drags the handle index to the specified MousePoint.
+        '''
+        self.handles[index] = mp
+        self.move_line(self.handles[0], self.handles[1])
+
     def nearest_point(self, P):
         '''
         Returns the nearest point on the line segment to the point P = (x, y).

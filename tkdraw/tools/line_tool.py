@@ -61,7 +61,7 @@ class LineTool(Tool):
                 self._go_idle()
                 return
 
-            self.workspace.doc.add_elem(self.line_elem)
+            self.workspace.doc.elem_add(self.line_elem)
             self.line_elem = None
             self.state     = State.IDLE
 
