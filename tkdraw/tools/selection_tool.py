@@ -14,9 +14,9 @@ ARROW_DV = {
 
 
 class State(Enum):
-    IDLE         = 0
-    DRAG_STARTED = 1     # Clicked on an elem and dragging
-    RECT_STARTED = 2     # Clicked in open space and doing selection rect
+    IDLE              = 0
+    DRAG_ELEM_STARTED = 1     # Clicked on an elem and dragging
+    RECT_STARTED      = 2     # Clicked in open space and doing selection rect
 
 
 class SelectionTool(Tool):
@@ -111,8 +111,8 @@ class SelectionTool(Tool):
         if self.last_mouse_point:
             self._add_nearest_points(self.last_mouse_point)
 
-    def _start_drag(self, p):
-        self.state   = State.DRAG_STARTED
+    def _start_drag_elem(self, p):
+        self.state   = State.DRAG_ELEM_STARTED
         self.drag_p0 = p
         self.drag_p1 = p
 
@@ -179,7 +179,7 @@ class SelectionTool(Tool):
         if self.state == State.IDLE:
             self._remove_selected_points()
             self.selected_elems.clear()
-        elif self.state == State.DRAG_STARTED:
+        elif self.state == State.DRAG_ELEM_STARTED:
             dv = self.drag_p0 - self.drag_p1
             self._translate_elems(self.selected_elems, dv)
             self.drag_p0 = None
@@ -199,7 +199,7 @@ class SelectionTool(Tool):
                 self.selected_elems.discard(self.nearest_elem)
             else:
                 self.selected_elems.add(self.nearest_elem)
-                self._start_drag(p)
+                self._start_drag_elem(p)
         else:
             if not self.nearest_elem:
                 self.selected_elems.clear()
@@ -207,14 +207,14 @@ class SelectionTool(Tool):
             elif self.nearest_elem not in self.selected_elems:
                 self.selected_elems.clear()
                 self.selected_elems.add(self.nearest_elem)
-                self._start_drag(p)
+                self._start_drag_elem(p)
             else:
-                self._start_drag(p)
+                self._start_drag_elem(p)
 
         self._update_selected_points()
 
     def handle_mouse_up(self, p):
-        if self.state == State.DRAG_STARTED:
+        if self.state == State.DRAG_ELEM_STARTED:
             self.state = State.IDLE
         elif self.state == State.RECT_STARTED:
             self.selected_elems.update(self.select_rect_elems)
@@ -225,7 +225,7 @@ class SelectionTool(Tool):
         self.last_mouse_point = p
         if self.state == State.IDLE:
             self._add_nearest_points(p)
-        elif self.state == State.DRAG_STARTED:
+        elif self.state == State.DRAG_ELEM_STARTED:
             self._translate_elems(self.selected_elems, p - self.drag_p1)
             self.drag_p1 = p
         elif self.state == State.RECT_STARTED:
