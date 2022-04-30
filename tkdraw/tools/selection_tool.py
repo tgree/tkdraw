@@ -1,8 +1,10 @@
+import math
 from enum import Enum
 
 from .tool import Tool
 from .. import geom
 from .. import icons
+from .. import coords
 
 
 ARROW_DV = {
@@ -14,9 +16,10 @@ ARROW_DV = {
 
 
 class State(Enum):
-    IDLE              = 0
-    DRAG_ELEM_STARTED = 1     # Clicked on an elem and dragging
-    RECT_STARTED      = 2     # Clicked in open space and doing selection rect
+    IDLE                = 0
+    DRAG_ELEM_STARTED   = 1  # Clicked on an elem and dragging
+    DRAG_HANDLE_STARTED = 2  # Clicked on a handle of a selected elem
+    RECT_STARTED        = 3  # Clicked in open space and doing selection rect
 
 
 class SelectionTool(Tool):
@@ -28,8 +31,13 @@ class SelectionTool(Tool):
         self.selected_elems   = set()
         self.selected_points  = []
         self.last_mouse_point = None
+
         self.drag_p0          = None
         self.drag_p1          = None
+
+        self.drag_handle_h0    = None
+        self.drag_handle_elem  = None
+        self.drag_handle_index = None
 
         self.select_rect        = None
         self.select_rect_elem   = None
@@ -71,19 +79,19 @@ class SelectionTool(Tool):
         if not self.workspace.doc.elems:
             return
 
-        nearest_elem = None
-        nearest_nn   = None
-        for e in self.workspace.doc.elems:
-            v  = geom.Vec(p.ex, p.ey)
-            dv = e.nearest_point(v) - v
-            nn = dv.norm_squared()
-            if not nearest_elem or nn < nearest_nn:
-                nearest_elem, nearest_nn = e, nn
+        nearest_elem, _, nearest_nn = self._find_nearby_handle(p)
+        if nearest_elem is None:
+            for e in self.workspace.doc.elems:
+                v  = geom.Vec(p.ex, p.ey)
+                dv = e.nearest_point(v) - v
+                nn = dv.norm_squared()
+                if not nearest_elem or nn < nearest_nn:
+                    nearest_elem, nearest_nn = e, nn
 
-        if nearest_nn >= 4:
-            self._remove_nearest_points()
-            self.nearest_elem = None
-            return
+            if nearest_nn >= 4:
+                self._remove_nearest_points()
+                self.nearest_elem = None
+                return
 
         if nearest_elem == self.nearest_elem:
             return
@@ -96,6 +104,26 @@ class SelectionTool(Tool):
 
     def _remove_nearest_points(self):
         self._remove_handle_points(self.nearest_points)
+
+    def _find_nearby_handle(self, p):
+        '''
+        Finds a handle of a selected item within 6 canvas units of the point p,
+        if one exists.
+        '''
+        nearest_elem   = None
+        nearest_handle = None
+        nearest_nn     = None
+        for se in self.selected_elems:
+            for hi, h in enumerate(se.handles):
+                v  = geom.Vec(p.ex, p.ey)
+                dv = h - v
+                nn = dv.norm_squared()
+                if not nearest_elem or nn < nearest_nn:
+                    nearest_elem, nearest_handle, nearest_nn = se, hi, nn
+        if nearest_elem is not None:
+            if coords.grid_to_canvas_delta(math.sqrt(nearest_nn)) <= 6:
+                return nearest_elem, nearest_handle, nearest_nn
+        return None, None, None
 
     def _translate_elems(self, elems, dv):
         if not dv:
@@ -112,9 +140,17 @@ class SelectionTool(Tool):
             self._add_nearest_points(self.last_mouse_point)
 
     def _start_drag_elem(self, p):
+        assert self.state == State.IDLE
         self.state   = State.DRAG_ELEM_STARTED
         self.drag_p0 = p
         self.drag_p1 = p
+
+    def _start_drag_handle(self, _p, e, hi):
+        assert self.state == State.IDLE
+        self.state             = State.DRAG_HANDLE_STARTED
+        self.drag_handle_h0    = e.handles[hi]
+        self.drag_handle_elem  = e
+        self.drag_handle_index = hi
 
     def _start_selection_rect(self, p):
         assert self.state == State.IDLE
@@ -186,6 +222,21 @@ class SelectionTool(Tool):
             self.drag_p0 = None
             self.drag_p1 = None
             self.state   = State.IDLE
+        elif self.state == State.DRAG_HANDLE_STARTED:
+            self.drag_handle_elem.drag_handle(self.drag_handle_index,
+                                              self.drag_handle_h0)
+
+            self._update_selected_points()
+            if self.nearest_elem:
+                self._remove_nearest_points()
+                self.nearest_elem = None
+            if self.last_mouse_point:
+                self._add_nearest_points(self.last_mouse_point)
+
+            self.drag_handle_h0    = None
+            self.drag_handle_elem  = None
+            self.drag_handle_index = None
+            self.state             = State.IDLE
         elif self.state == State.RECT_STARTED:
             self._stop_selection_rect()
 
@@ -202,7 +253,10 @@ class SelectionTool(Tool):
                 self.selected_elems.add(self.nearest_elem)
                 self._start_drag_elem(p)
         else:
-            if not self.nearest_elem:
+            e, hi, _ = self._find_nearby_handle(p)
+            if e is not None:
+                self._start_drag_handle(p, e, hi)
+            elif not self.nearest_elem:
                 self.selected_elems.clear()
                 self._start_selection_rect(p)
             elif self.nearest_elem not in self.selected_elems:
@@ -220,6 +274,14 @@ class SelectionTool(Tool):
             if dv and self.selected_elems:
                 self.workspace.doc.elems_translated(self.selected_elems, dv)
             self.state = State.IDLE
+        elif self.state == State.DRAG_HANDLE_STARTED:
+            h = self.drag_handle_elem.handles[self.drag_handle_index]
+            if h != self.drag_handle_h0:
+                self.workspace.doc.elem_handle_dragged(self.drag_handle_elem,
+                                                       self.drag_handle_index,
+                                                       self.drag_handle_h0,
+                                                       h)
+            self.state = State.IDLE
         elif self.state == State.RECT_STARTED:
             self.selected_elems.update(self.select_rect_elems)
             self._update_selected_points()
@@ -232,6 +294,12 @@ class SelectionTool(Tool):
         elif self.state == State.DRAG_ELEM_STARTED:
             self._translate_elems(self.selected_elems, p - self.drag_p1)
             self.drag_p1 = p
+        elif self.state == State.DRAG_HANDLE_STARTED:
+            self.drag_handle_elem.drag_handle(self.drag_handle_index, p)
+            self._update_selected_points()
+            self._remove_nearest_points()
+            self.nearest_elem = None
+            self._add_nearest_points(p)
         elif self.state == State.RECT_STARTED:
             self.select_rect = geom.Rect(self.select_rect.p0, p)
             self.workspace.delete_canvas_elem(self.select_rect_elem)
