@@ -172,6 +172,7 @@ class SelectionTool(Tool):
         dv = ARROW_DV.get(e.keysym)
         if dv is not None:
             self._translate_elems(self.selected_elems, dv)
+            self.workspace.doc.elems_translated(self.selected_elems, dv)
         elif e.keysym == 'Escape':
             self.handle_esc_pressed()
 
@@ -215,6 +216,9 @@ class SelectionTool(Tool):
 
     def handle_mouse_up(self, p):
         if self.state == State.DRAG_ELEM_STARTED:
+            dv = self.drag_p1 - self.drag_p0
+            if dv and self.selected_elems:
+                self.workspace.doc.elems_translated(self.selected_elems, dv)
             self.state = State.IDLE
         elif self.state == State.RECT_STARTED:
             self.selected_elems.update(self.select_rect_elems)
