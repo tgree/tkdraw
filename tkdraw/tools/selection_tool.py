@@ -211,6 +211,8 @@ class SelectionTool(Tool):
             self.workspace.doc.elems_translated(self.selected_elems, dv)
         elif e.keysym == 'Escape':
             self.handle_esc_pressed()
+        elif e.keysym == 'BackSpace':
+            self.handle_backspace_pressed()
 
     def handle_esc_pressed(self):
         if self.state == State.IDLE:
@@ -239,6 +241,33 @@ class SelectionTool(Tool):
             self.state             = State.IDLE
         elif self.state == State.RECT_STARTED:
             self._stop_selection_rect()
+
+    def handle_backspace_pressed(self):
+        self._remove_selected_points()
+        self._remove_nearest_points()
+        self.nearest_elem = None
+
+        elems = self.selected_elems.union(self.select_rect_elems)
+        for e in elems:
+            self.workspace.delete_canvas_elem(e.tk_elem)
+        self.workspace.doc.elems_delete(elems)
+
+        self.selected_elems.clear()
+
+        if self.state == State.DRAG_ELEM_STARTED:
+            self.drag_p0 = None
+            self.drag_p1 = None
+        elif self.state == State.DRAG_HANDLE_STARTED:
+            self.drag_handle_h0    = None
+            self.drag_handle_elem  = None
+            self.drag_handle_index = None
+        elif self.state == State.RECT_STARTED:
+            self._stop_selection_rect()
+
+        if self.last_mouse_point:
+            self._add_nearest_points(self.last_mouse_point)
+
+        self.state = State.IDLE
 
     def handle_mouse_down(self, p):
         assert self.state == State.IDLE
