@@ -2,5 +2,6 @@ class Document:
     def __init__(self):
         self.elems = []
 
-    def add_elem(self, elem):
+    def elem_add(self, elem):
+        print('%s added.' % elem)
         self.elems.append(elem)
