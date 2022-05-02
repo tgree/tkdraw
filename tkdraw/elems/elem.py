@@ -10,3 +10,6 @@ class Elem:
 
     def nearest_point(self, P):
         raise NotImplementedError
+
+    def overlaps_rect(self, R):
+        raise NotImplementedError
