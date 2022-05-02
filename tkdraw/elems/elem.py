@@ -5,6 +5,9 @@ class Elem:
     def translate(self, dv):
         raise NotImplementedError
 
+    def is_handle_interactive(self, index):
+        raise NotImplementedError
+
     def drag_handle(self, index, mp):
         raise NotImplementedError
 

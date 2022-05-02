@@ -36,6 +36,12 @@ class LineElem(Elem):
         '''
         self.move_line(self.segment.line.p0 + dv, self.segment.line.p1 + dv)
 
+    def is_handle_interactive(self, _index):
+        '''
+        Both line handles are interactive and used to drag the endpoints around.
+        '''
+        return True
+
     def drag_handle(self, index, mp):
         '''
         Drags the handle index to the specified MousePoint.
