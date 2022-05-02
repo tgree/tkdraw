@@ -162,9 +162,9 @@ class Canvas:
                 (x, y, x + width, y + height), **kwargs)
         return CanvasElem(self, elem_id, x, y, width=width, height=height)
 
-    def add_text(self, x, y, **kwargs):
-        elem_id = self._canvas.create_text((x, y), **kwargs)
-        return TextElem(self, elem_id, x, y)
+    def add_text(self, p0, **kwargs):
+        elem_id = self._canvas.create_text((p0.x, p0.y), **kwargs)
+        return TextElem(self, elem_id, p0.x, p0.y)
 
     def add_window(self, x, y, widget, **kwargs):
         self._canvas.create_window(x, y, window=widget._widget, **kwargs)
