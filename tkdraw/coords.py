@@ -138,6 +138,13 @@ def grid_to_canvas_delta(d):
     return d * GRID_SPACING
 
 
+def canvas_to_grid_delta(d):
+    '''
+    Convert a delta value in canvas units to grid units.
+    '''
+    return d / GRID_SPACING
+
+
 def get_canvas_h_bands(w, h):
     '''
     Given the canvas width and height, returns a list of rectangles
