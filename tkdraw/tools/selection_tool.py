@@ -85,7 +85,7 @@ class SelectionTool(Tool):
                 v  = geom.Vec(p.ex, p.ey)
                 dv = e.nearest_point(v) - v
                 nn = dv.norm_squared()
-                if not nearest_elem or nn < nearest_nn:
+                if nearest_elem is None or nn < nearest_nn:
                     nearest_elem, nearest_nn = e, nn
 
             if nearest_nn >= 4:
