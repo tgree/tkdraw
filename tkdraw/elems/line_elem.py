@@ -31,6 +31,9 @@ class LineElem(Elem):
                 coords.grid_to_canvas_delta(self.segment.line.dt.y))
 
     def translate(self, dv):
+        '''
+        Translates the line by the delta-vector dv.
+        '''
         self.move_line(self.segment.line.p0 + dv, self.segment.line.p1 + dv)
 
     def drag_handle(self, index, mp):
