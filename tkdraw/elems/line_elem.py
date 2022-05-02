@@ -4,13 +4,13 @@ from .. import geom
 
 
 class LineElem(Elem):
-    def __init__(self, tk_elem, p0, p1):
+    def __init__(self, workspace, p0, p1):
         '''
         Given start and end points, p0 and p1, create a LineElem.
         '''
         super().__init__()
 
-        self.tk_elem = tk_elem
+        self.tk_elem = workspace.add_line(p0, p1)
         self.segment = geom.LineSegment(p0, p1)
         self.handles.append(p0)
         self.handles.append(p1)
