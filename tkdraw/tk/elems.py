@@ -58,14 +58,14 @@ class CanvasElem(Elem):
     def move_to(self, x, y):
         self.x = x
         self.y = y
-        if self.height is not None:
+        if hasattr(self, 'height'):
             self.coords(x, y, x + self.width, y + self.height)
         else:
             self.coords(x, y)
 
     def resize(self, R):
-        assert self.width is not None
-        assert self.height is not None
+        assert hasattr(self, 'width')
+        assert hasattr(self, 'height')
         self.x      = R.p0.x
         self.y      = R.p0.y
         self.width  = R.width
