@@ -23,7 +23,7 @@ class CanvasElem(Elem):
             self.by     = y + height
 
     def configure(self, **kwargs):
-        self._canvas._canvas.itemconfig(self._elem_id, **kwargs)
+        return self._canvas._canvas.itemconfig(self._elem_id, **kwargs)
 
     def bbox(self):
         return self._canvas._bbox(self)
