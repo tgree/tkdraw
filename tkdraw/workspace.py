@@ -147,6 +147,7 @@ class Workspace(TKBase):
 
         tool_classes = [tools.SelectionTool,
                         tools.LineTool,
+                        tools.TextTool,
                         tools.NullTool,
                         ]
         for i, tcls in enumerate(tool_classes):
