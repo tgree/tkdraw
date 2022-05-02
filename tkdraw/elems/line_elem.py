@@ -4,6 +4,8 @@ from .. import geom
 
 
 class LineElem(Elem):
+    NN_SLOP = 4
+
     def __init__(self, workspace, p0, p1):
         '''
         Given start and end points, p0 and p1, create a LineElem.
