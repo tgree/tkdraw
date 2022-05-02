@@ -23,7 +23,10 @@ class CanvasElem(Elem):
             self.by     = y + height
 
     def configure(self, **kwargs):
-        self._canvas._canvas.itemconfig(self._elem_id, **kwargs)
+        return self._canvas._canvas.itemconfig(self._elem_id, **kwargs)
+
+    def cget(self, config):
+        return self._canvas._canvas.itemcget(self._elem_id, config)
 
     def bbox(self):
         return self._canvas._bbox(self)
@@ -55,14 +58,14 @@ class CanvasElem(Elem):
     def move_to(self, x, y):
         self.x = x
         self.y = y
-        if self.height is not None:
+        if hasattr(self, 'height'):
             self.coords(x, y, x + self.width, y + self.height)
         else:
             self.coords(x, y)
 
     def resize(self, R):
-        assert self.width is not None
-        assert self.height is not None
+        assert hasattr(self, 'width')
+        assert hasattr(self, 'height')
         self.x      = R.p0.x
         self.y      = R.p0.y
         self.width  = R.width
@@ -159,9 +162,9 @@ class Canvas:
                 (x, y, x + width, y + height), **kwargs)
         return CanvasElem(self, elem_id, x, y, width=width, height=height)
 
-    def add_text(self, x, y, **kwargs):
-        elem_id = self._canvas.create_text((x, y), **kwargs)
-        return TextElem(self, elem_id, x, y)
+    def add_text(self, p0, **kwargs):
+        elem_id = self._canvas.create_text((p0.x, p0.y), **kwargs)
+        return TextElem(self, elem_id, p0.x, p0.y)
 
     def add_window(self, x, y, widget, **kwargs):
         self._canvas.create_window(x, y, window=widget._widget, **kwargs)

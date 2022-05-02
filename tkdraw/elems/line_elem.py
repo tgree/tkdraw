@@ -4,13 +4,15 @@ from .. import geom
 
 
 class LineElem(Elem):
-    def __init__(self, tk_elem, p0, p1):
+    NN_SLOP = 4
+
+    def __init__(self, workspace, p0, p1):
         '''
         Given start and end points, p0 and p1, create a LineElem.
         '''
         super().__init__()
 
-        self.tk_elem = tk_elem
+        self.tk_elem = workspace.add_line(p0, p1)
         self.segment = geom.LineSegment(p0, p1)
         self.handles.append(p0)
         self.handles.append(p1)
@@ -31,7 +33,16 @@ class LineElem(Elem):
                 coords.grid_to_canvas_delta(self.segment.line.dt.y))
 
     def translate(self, dv):
+        '''
+        Translates the line by the delta-vector dv.
+        '''
         self.move_line(self.segment.line.p0 + dv, self.segment.line.p1 + dv)
+
+    def is_handle_interactive(self, _index):
+        '''
+        Both line handles are interactive and used to drag the endpoints around.
+        '''
+        return True
 
     def drag_handle(self, index, mp):
         '''

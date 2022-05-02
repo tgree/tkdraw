@@ -85,13 +85,15 @@ class SelectionTool(Tool):
                 v  = geom.Vec(p.ex, p.ey)
                 dv = e.nearest_point(v) - v
                 nn = dv.norm_squared()
-                if not nearest_elem or nn < nearest_nn:
+                if nn > e.NN_SLOP:
+                    continue
+                if nearest_elem is None or nn < nearest_nn:
                     nearest_elem, nearest_nn = e, nn
 
-            if nearest_nn >= 4:
-                self._remove_nearest_points()
-                self.nearest_elem = None
-                return
+        if nearest_elem is None:
+            self._remove_nearest_points()
+            self.nearest_elem = None
+            return
 
         if nearest_elem == self.nearest_elem:
             return
@@ -115,6 +117,8 @@ class SelectionTool(Tool):
         nearest_nn     = None
         for se in self.selected_elems:
             for hi, h in enumerate(se.handles):
+                if not se.is_handle_interactive(hi):
+                    continue
                 v  = geom.Vec(p.ex, p.ey)
                 dv = h - v
                 nn = dv.norm_squared()

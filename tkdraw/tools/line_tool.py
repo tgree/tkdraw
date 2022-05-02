@@ -51,8 +51,7 @@ class LineTool(Tool):
 
     def handle_mouse_down(self, p):
         assert self.state == State.IDLE
-        tk_elem        = self.workspace.add_line(p, p)
-        self.line_elem = LineElem(tk_elem, p, p)
+        self.line_elem = LineElem(self.workspace, p, p)
         self.state     = State.DRAG_STARTED
 
     def handle_mouse_up(self, p):

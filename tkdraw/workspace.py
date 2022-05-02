@@ -147,6 +147,7 @@ class Workspace(TKBase):
 
         tool_classes = [tools.SelectionTool,
                         tools.LineTool,
+                        tools.TextTool,
                         tools.NullTool,
                         ]
         for i, tcls in enumerate(tool_classes):
@@ -239,6 +240,12 @@ class Workspace(TKBase):
         '''
         return self.canvas.add_line(coords.gridp_to_canvasp(p0),
                                     coords.gridp_to_canvasp(p1))
+
+    def add_text(self, p0, **kwargs):
+        '''
+        Add a text item in grid coordinates to the workspace.
+        '''
+        return self.canvas.add_text(coords.gridp_to_canvasp(p0), **kwargs)
 
     def add_rectangle(self, R, **kwargs):
         '''
