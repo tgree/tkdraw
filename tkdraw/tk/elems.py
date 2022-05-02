@@ -25,6 +25,9 @@ class CanvasElem(Elem):
     def configure(self, **kwargs):
         return self._canvas._canvas.itemconfig(self._elem_id, **kwargs)
 
+    def cget(self, config):
+        return self._canvas._canvas.itemcget(self._elem_id, config)
+
     def bbox(self):
         return self._canvas._bbox(self)
 
