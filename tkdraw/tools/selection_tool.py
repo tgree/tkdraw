@@ -115,6 +115,8 @@ class SelectionTool(Tool):
         nearest_nn     = None
         for se in self.selected_elems:
             for hi, h in enumerate(se.handles):
+                if not se.is_handle_interactive(hi):
+                    continue
                 v  = geom.Vec(p.ex, p.ey)
                 dv = h - v
                 nn = dv.norm_squared()
