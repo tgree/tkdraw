@@ -178,8 +178,14 @@ class SelectionTool(Tool):
     def _selection_add_elems(self, elems):
         if not elems:
             return
+        if self.selected_elems:
+            self.workspace.inspect_canvas.clear()
 
         self.selected_elems.update(elems)
+
+        if len(self.selected_elems) == 1:
+            e = next(iter(self.selected_elems))
+            e.add_inspector(self.workspace)
 
     def _selection_add_elem(self, elem):
         self._selection_add_elems(set([elem]))
@@ -191,6 +197,9 @@ class SelectionTool(Tool):
             return
 
         self.selected_elems.difference_update(elems)
+
+        if not self.selected_elems:
+            self.workspace.inspect_canvas.clear()
 
     def _selection_remove_elem(self, elem):
         self._selection_remove_elems(set([elem]))
