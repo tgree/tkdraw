@@ -18,6 +18,7 @@ class TextElem(Elem):
                                           justify='center')
         self.tk_font = tkinter.font.nametofont(self.tk_elem.cget('font'))
 
+        self.workspace   = workspace
         self.p0          = p0
         self.text        = None
         self.text_width  = None
@@ -35,6 +36,7 @@ class TextElem(Elem):
         self.handles[1] = self.brect.ne
         self.handles[2] = self.brect.se
         self.handles[3] = self.brect.sw
+        self.workspace.notify_handles_changed(self, [0, 1, 2, 3])
 
     def set_text(self, text):
         lines = text.splitlines()
