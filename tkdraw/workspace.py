@@ -8,6 +8,7 @@ from . import document
 WINDOW_X      = 10
 WINDOW_Y      = 50
 TITLE_HEIGHT  = 28
+BOTTOM_SPACE  = 200
 
 TOOL_DIM     = 50
 TOOLS_WIDTH  = 2 * TOOL_DIM
@@ -118,7 +119,8 @@ class Workspace(TKBase):
 
         w = coords.canvasx_floor(self._root.winfo_screenwidth() - 2*WINDOW_X)
         h = coords.canvasy_floor(self._root.winfo_screenheight() -
-                                 TITLE_HEIGHT - WINDOW_Y - WINDOW_X)
+                                 TITLE_HEIGHT - WINDOW_Y - WINDOW_X -
+                                 BOTTOM_SPACE)
 
         self.set_geometry(WINDOW_X, WINDOW_Y, w, h)
         self.tool_canvas = self.add_canvas(TOOLS_WIDTH, TOOLS_HEIGHT, 0, 0,
