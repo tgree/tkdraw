@@ -16,3 +16,6 @@ class Elem:
 
     def overlaps_rect(self, R):
         raise NotImplementedError
+
+    def add_inspector(self, workspace):
+        raise NotImplementedError

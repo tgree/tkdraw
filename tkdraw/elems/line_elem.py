@@ -12,8 +12,9 @@ class LineElem(Elem):
         '''
         super().__init__()
 
-        self.tk_elem = workspace.add_line(p0, p1)
-        self.segment = geom.LineSegment(p0, p1)
+        self.workspace = workspace
+        self.tk_elem   = workspace.add_line(p0, p1)
+        self.segment   = geom.LineSegment(p0, p1)
         self.handles.append(p0)
         self.handles.append(p1)
 
@@ -31,6 +32,7 @@ class LineElem(Elem):
                 coords.gridy_to_canvasy(p0.y),
                 coords.grid_to_canvas_delta(self.segment.line.dt.x),
                 coords.grid_to_canvas_delta(self.segment.line.dt.y))
+        self.workspace.notify_handles_changed(self, [0, 1])
 
     def translate(self, dv):
         '''
@@ -63,3 +65,6 @@ class LineElem(Elem):
         rectangle R.  Returns False otherwise.
         '''
         return R.overlaps_segment(self.segment)
+
+    def add_inspector(self, _workspace):
+        return None

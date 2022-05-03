@@ -2,6 +2,8 @@ from .tool import Tool
 
 
 class NullTool(Tool):
+    INSPECT_TITLE = 'NULL TOOL'
+
     def handle_app_activated(self):
         pass
 
@@ -30,4 +32,7 @@ class NullTool(Tool):
         pass
 
     def handle_mouse_moved(self, p):
+        pass
+
+    def handle_elem_handles_changed(self, _elem, _handles):
         pass
