@@ -2,6 +2,8 @@ from .tool import Tool
 
 
 class NullTool(Tool):
+    INSPECT_TITLE = 'NULL TOOL'
+
     def handle_app_activated(self):
         pass
 

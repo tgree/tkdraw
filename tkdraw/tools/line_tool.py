@@ -11,6 +11,8 @@ class State(Enum):
 
 
 class LineTool(Tool):
+    INSPECT_TITLE = 'LINE TOOL'
+
     def __init__(self, workspace, R, *args, **kwargs):
         super().__init__(workspace, R, *args, **kwargs)
         self.state     = State.IDLE

@@ -3,6 +3,8 @@ from ..elems import TextElem
 
 
 class TextTool(Tool):
+    INSPECT_TITLE = 'TEXT TOOL'
+
     def __init__(self, workspace, R, *args, **kwargs):
         super().__init__(workspace, R, *args, **kwargs)
         self.icon_text = workspace.tool_canvas.add_text(

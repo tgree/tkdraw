@@ -23,6 +23,8 @@ class State(Enum):
 
 
 class SelectionTool(Tool):
+    INSPECT_TITLE = 'SELECT TOOL'
+
     def __init__(self, workspace, R, *args, **kwargs):
         super().__init__(workspace, R, *args, **kwargs)
         self.state            = State.IDLE
