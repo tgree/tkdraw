@@ -171,6 +171,9 @@ class Canvas:
     def add_entry(self, **kwargs):
         return tkinter.Entry(self._canvas, **kwargs)
 
+    def add_multiline_entry(self, **kwargs):
+        return tkinter.Text(self._canvas, **kwargs)
+
     def register_handler(self, event_type, handler):
         self._canvas.bind(event_type, handler)
 
