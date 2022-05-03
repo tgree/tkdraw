@@ -1,0 +1,3 @@
+- text anchors
+- dynamic handle management
+- text box coloring is trash

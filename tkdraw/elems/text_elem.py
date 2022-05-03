@@ -39,7 +39,7 @@ class TextElem(Elem):
         self.workspace.notify_handles_changed(self, [0, 1, 2, 3])
 
     def set_text(self, text):
-        lines = text.splitlines()
+        lines = (text + '\n').splitlines()
         w     = max(self.tk_font.measure(l) for l in lines)
         h     = self.tk_font.metrics('linespace') * len(lines)
 

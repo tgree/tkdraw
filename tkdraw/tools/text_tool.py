@@ -1,6 +1,6 @@
 from .tool import Tool
 from ..elems import TextElem
-from ..inspectors import CoordinatesInspector
+from ..inspectors import CoordinatesInspector, TextEntryInspector
 
 
 class TextTool(Tool):
@@ -12,6 +12,7 @@ class TextTool(Tool):
                 R.p0 + (R.p1 - R.p0) / 2, text='T')
 
         self.coordinates_inspector = None
+        self.text_entry_inspector  = None
 
     def handle_app_activated(self):
         pass
@@ -24,6 +25,8 @@ class TextTool(Tool):
 
         ic = self.workspace.inspect_canvas
         self.coordinates_inspector = CoordinatesInspector(ic, 1)
+        self.text_entry_inspector  = TextEntryInspector(self.workspace)
+        self.text_entry_inspector.focus_set()
 
     def handle_tool_deselected(self):
         self.icon_border.configure(outline='#CCCCCC')
@@ -38,7 +41,11 @@ class TextTool(Tool):
         pass
 
     def handle_mouse_down(self, p):
-        e = TextElem(self.workspace, p, 'Terry\nis\nCOOOOOL')
+        t = self.text_entry_inspector.get_text()
+        if not t:
+            return
+
+        e = TextElem(self.workspace, p, t)
         self.workspace.doc.elem_add(e)
 
     def handle_mouse_up(self, p):
