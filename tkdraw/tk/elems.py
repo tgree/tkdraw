@@ -86,16 +86,6 @@ class LineElem(CanvasElem):
         self.coords(x, y, x + dx, y + dy)
 
 
-class Widget:
-    def __init__(self, widget):
-        self._widget = widget
-
-
-class Entry(Widget):
-    def focus_set(self):
-        self._widget.focus_set()
-
-
 class Canvas:
     def __init__(self, workspace, canvas, w, h):
         self._workspace = workspace
@@ -167,7 +157,7 @@ class Canvas:
         return TextElem(self, elem_id, p0.x, p0.y)
 
     def add_window(self, x, y, widget, **kwargs):
-        self._canvas.create_window(x, y, window=widget._widget, **kwargs)
+        self._canvas.create_window(x, y, window=widget, **kwargs)
 
     def delete(self, tag_or_id):
         self._canvas.delete(tag_or_id)
@@ -176,7 +166,7 @@ class Canvas:
         self.delete(elem._elem_id)
 
     def add_entry(self, **kwargs):
-        return Entry(tkinter.Entry(self._canvas, **kwargs))
+        return tkinter.Entry(self._canvas, **kwargs)
 
     def register_handler(self, event_type, handler):
         self._canvas.bind(event_type, handler)
