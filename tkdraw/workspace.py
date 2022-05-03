@@ -135,12 +135,13 @@ class Workspace(TKBase):
         self.register_mouse_down(self.handle_mouse_down)
         self.register_mouse_up(self.handle_mouse_up)
         self.register_mouse_moved(self.handle_mouse_moved)
-        self.register_handler('<KeyPress>', self.handle_key_pressed)
         self.register_handler('<Configure>', self.handle_config_change)
         self.register_handler('<Activate>', self.handle_activate)
         self.register_handler('<Deactivate>', self.handle_deactivate)
+        self.canvas.register_handler('<KeyPress>', self.handle_key_pressed)
         self.canvas.register_handler('<Enter>', self.handle_canvas_entered)
         self.canvas.register_handler('<Leave>', self.handle_canvas_exited)
+        self.canvas.focus_set()
 
         self.doc = document.Document()
 
