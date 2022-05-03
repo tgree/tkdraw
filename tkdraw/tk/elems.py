@@ -128,6 +128,9 @@ class Canvas:
             args.append(v[1])
         return args, min_x, min_y, w, h
 
+    def focus_set(self):
+        self._canvas.focus_set()
+
     def add_lines(self, vertices, **kwargs):
         args, min_x, min_y, w, h = self._vertices_to_args(vertices)
         elem_id = self._canvas.create_line(*args, **kwargs)
