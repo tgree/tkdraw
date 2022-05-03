@@ -237,6 +237,9 @@ class Workspace(TKBase):
             return
         self.selected_tool.handle_app_deactivated()
 
+    def notify_handles_changed(self, elem, handles):
+        self.selected_tool.handle_elem_handles_changed(elem, handles)
+
     def add_line(self, p0, p1):
         '''
         Add a line in grid coordinates to the workspace.
