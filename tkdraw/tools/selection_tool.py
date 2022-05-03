@@ -75,6 +75,10 @@ class SelectionTool(Tool):
     def _remove_select_rect_points(self):
         self._remove_handle_points(self.select_rect_points)
 
+    def _update_select_rect_points(self):
+        self._remove_select_rect_points()
+        self._add_select_rect_points()
+
     def _add_nearest_points(self, p):
         if not self.workspace.doc.elems:
             return
@@ -129,19 +133,13 @@ class SelectionTool(Tool):
                 return nearest_elem, nearest_handle, nearest_nn
         return None, None, None
 
-    def _translate_elems(self, elems, dv):
+    @staticmethod
+    def _translate_elems(elems, dv):
         if not dv:
             return
 
         for e in elems:
             e.translate(dv)
-
-        self._update_selected_points()
-        if self.nearest_elem:
-            self._remove_nearest_points()
-            self.nearest_elem = None
-        if self.last_mouse_point:
-            self._add_nearest_points(self.last_mouse_point)
 
     def _start_drag_elem(self, p):
         assert self.state == State.IDLE
@@ -255,13 +253,6 @@ class SelectionTool(Tool):
             self.drag_handle_elem.drag_handle(self.drag_handle_index,
                                               self.drag_handle_h0)
 
-            self._update_selected_points()
-            if self.nearest_elem:
-                self._remove_nearest_points()
-                self.nearest_elem = None
-            if self.last_mouse_point:
-                self._add_nearest_points(self.last_mouse_point)
-
             self.drag_handle_h0    = None
             self.drag_handle_elem  = None
             self.drag_handle_index = None
@@ -352,10 +343,6 @@ class SelectionTool(Tool):
             self.drag_p1 = p
         elif self.state == State.DRAG_HANDLE_STARTED:
             self.drag_handle_elem.drag_handle(self.drag_handle_index, p)
-            self._update_selected_points()
-            self._remove_nearest_points()
-            self.nearest_elem = None
-            self._add_nearest_points(p)
         elif self.state == State.RECT_STARTED:
             self.select_rect = geom.Rect(self.select_rect.p0, p)
             self.workspace.delete_canvas_elem(self.select_rect_elem)
@@ -371,4 +358,10 @@ class SelectionTool(Tool):
             self._add_select_rect_points()
 
     def handle_elem_handles_changed(self, _elem, _handles):
-        pass
+        self._update_selected_points()
+        self._update_select_rect_points()
+        if self.nearest_elem:
+            self._remove_nearest_points()
+            self.nearest_elem = None
+        if self.last_mouse_point:
+            self._add_nearest_points(self.last_mouse_point)
