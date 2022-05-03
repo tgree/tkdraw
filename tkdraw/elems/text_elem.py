@@ -1,6 +1,7 @@
 import tkinter.font
 
 from .elem import Elem
+from ..inspectors import TextEntryInspector
 from .. import coords
 from .. import geom
 
@@ -75,3 +76,6 @@ class TextElem(Elem):
 
     def overlaps_rect(self, R):
         return self.brect.overlaps_rect(R)
+
+    def add_inspector(self, workspace):
+        return TextEntryInspector(workspace, elem=self)

@@ -65,3 +65,6 @@ class LineElem(Elem):
         rectangle R.  Returns False otherwise.
         '''
         return R.overlaps_segment(self.segment)
+
+    def add_inspector(self, _workspace):
+        return None
