@@ -67,3 +67,10 @@ class Tool:
         Handle a mouse moved event to coordinate (x, y) in the canvas.
         '''
         raise NotImplementedError
+
+    def handle_elem_handles_changed(self, elem, handles):
+        '''
+        Handle a notification that the specified element has had some of its
+        handles changed through some non-tool mechanism.
+        '''
+        raise NotImplementedError

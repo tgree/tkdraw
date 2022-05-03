@@ -369,3 +369,6 @@ class SelectionTool(Tool):
                 if e.overlaps_rect(self.select_rect):
                     self.select_rect_elems.add(e)
             self._add_select_rect_points()
+
+    def handle_elem_handles_changed(self, _elem, _handles):
+        pass

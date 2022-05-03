@@ -38,3 +38,6 @@ class TextTool(Tool):
 
     def handle_mouse_moved(self, p):
         pass
+
+    def handle_elem_handles_changed(self, _elem, _handles):
+        pass
